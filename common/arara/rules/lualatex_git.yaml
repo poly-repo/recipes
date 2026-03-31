@@ -1,0 +1,49 @@
+!config
+identifier: lualatex_git
+name: LuaLaTeX Monorepo
+commands:
+- name: LuaLaTeX with Local Path
+  command: >
+    @{
+        /*
+         * getOriginalReference() always returns an absolute MPPPath, so
+         * getParent() is never null even when arara passes only a basename
+         * to the rule. Walk up until we find the directory containing
+         * arararc.yaml — that is the monorepo root.
+         */
+        orig = getOriginalReference();
+        dir  = orig.getParent();
+        root = dir;
+        while (dir != null && !dir.resolve("arararc.yaml").getExists()) {
+            dir = dir.getParent();
+        }
+        if (dir != null) { root = dir; }
+
+        custom_path = root.toString() + "/common/latex//";
+        texcache = "/tmp/texmf-cache";
+        outdir = "/tmp";
+        stem = reference.fileName;
+        dot = stem.lastIndexOf(".");
+        if (dot > 0) { stem = stem.substring(0, dot); }
+
+        /*
+         * getCommand() runs from arara's CWD (the repo root), so we use
+         * getCommandWithWorkingDirectory to run from the .tex file's own
+         * directory. reference.getParent() is safe here because
+         * getOriginalReference() is absolute.
+         *
+         * Wrap with bash -c so TEXINPUTS takes effect before lualatex.
+         * Standard flags are baked in; add extra options via shell if needed.
+         */
+        return getCommandWithWorkingDirectory(
+            orig.getParent(),
+            "bash", "-c",
+            "mkdir -p \"" + texcache + "\" && " +
+            "TEXINPUTS=.:" + custom_path + ": " +
+            "TEXMFCACHE=\"" + texcache + "\" " +
+            "lualatex --synctex=1 --interaction=nonstopmode --halt-on-error --output-directory=\"" + outdir + "\" " + reference.fileName + " && " +
+            "cp -f \"" + outdir + "/" + stem + ".pdf\" \"" + orig.getParent().toString() + "/\" && " +
+            "cp -f \"" + outdir + "/" + stem + ".log\" \"" + orig.getParent().toString() + "/\" && " +
+            "if [ -f \"" + outdir + "/" + stem + ".synctex.gz\" ]; then cp -f \"" + outdir + "/" + stem + ".synctex.gz\" \"" + orig.getParent().toString() + "/\"; fi"
+        );
+    }

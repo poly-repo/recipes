@@ -1,0 +1,39 @@
+% arara: lualatex_git
+% Toggle '4x6', 'A6', or 'halfletter' here to change the physical card size
+\documentclass[4x6]{recipe-card}
+
+\begin{document}
+
+\section*{\color{recipeRed} 4-Hour Pizza Dough}
+\recipeMetadata{20m}{4h}{550°F}{--}{4}{Easy}
+
+\begin{minipage}[t]{0.35\textwidth}
+    \textbf{Les ingrédients} \\
+    \small
+    500g King Arthur Bread Flour \\
+    325g Water \\
+    10g Salt \\
+    2g Instant Yeast
+\end{minipage}
+\begin{minipage}[t]{0.6\textwidth}
+    \textbf{La recette} \\
+    \small
+    \begin{enumerate}
+        \item Mix flour, water, and yeast; let rest 20m.
+        \item Add salt and knead until smooth.
+        \item Bulk ferment at room temp for 4 hours.
+    \end{enumerate}
+\end{minipage}
+
+\vfill
+\begin{flushleft}
+    \rule{0.5\textwidth}{0.4pt} \\
+    \textit{\small Note: Scale the yeast down if opting for an overnight cold ferment.}
+\end{flushleft}
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south east, xshift=-0.3in, yshift=0.3in] at (current page.south east) 
+    {\qrcode[height=0.6in]{https://mauriziovitalerecipes.com/pizza}};
+\end{tikzpicture}
+
+\end{document}

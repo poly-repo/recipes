@@ -1,0 +1,41 @@
+% arara: lualatex_git
+\documentclass[4x6]{recipe-card}
+
+\begin{document}
+\pagestyle{empty}
+
+% --- FRONT SIDE ---
+\begin{recipe}[\qrcode[height=0.5in]{https://maurizio.link/negroni}]{Negroni}
+% Glass, Method, Ice, Strength, Garnish
+\noindent\cocktailMeta{Rocks}{Built}{Large Cube}{High}{Orange Peel}
+\begin{ingredients}
+\ingredient{30 ml London Dry Gin}
+\ingredient{30 ml Sweet Vermouth}
+\ingredient{30 ml Campari}
+\end{ingredients}
+\begin{process}
+\step{Combine all ingredients in a mixing glass with plenty of ice.}
+\step{Stir for 30 seconds until well-chilled.}
+\step{Strain into a rocks glass over a fresh large ice cube.}
+\step{Express orange oil over the drink and garnish.}
+\end{process}
+
+\vfill
+
+\begin{recipeinfo}
+    The classic 1:1:1 ratio is a baseline; try a slightly heavier Gin pour (35ml) if using a particularly floral botanical.
+\end{recipeinfo}
+\end{recipe}
+
+% --- BACK SIDE ---
+\newpage
+\begin{center}
+    \small\textsc{\color{recipeRed} History \& Provenance}
+    \rule{\textwidth}{0.4pt}
+\end{center}
+\footnotesize
+The Negroni was famously born in Florence at Caffè Casoni around 1919. Legend states that Count Camillo Negroni asked his bartender, Fosco Scarselli, to stiffen his favorite cocktail—the Americano—by replacing the soda water with gin. Scarselli also swapped the lemon garnish for orange to signify that it was a different drink.
+
+This "Americano with Gin" eventually became the namesake of the Count, and remains a cornerstone of the Italian *aperitivo* tradition.
+
+\end{document}
