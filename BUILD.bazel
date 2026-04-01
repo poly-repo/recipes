@@ -1,0 +1,15 @@
+load("//build/copybara:copybara.bzl", "copybara_workflow")
+
+copybara_workflow(
+    name = "recipes",
+    excludes = [
+    ],
+    includes = [
+        "common/latex/**",
+        "people/mav/recipes/**",
+    ],
+    moves = {
+        "people/mav/recipes": "",
+        "EXTERNAL_LICENSE": "LICENSE",
+    },
+)

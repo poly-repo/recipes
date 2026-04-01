@@ -285,10 +285,70 @@
 }
 \ExplSyntaxOff
 
-% Cocktail Metadata: Glass, Method, Ice, Strength, Garnish
-\newcommand{\cocktailMeta}[5]{
-    \small \cocktailGlassWithLabel{#1} \quad \cocktailMethodWithLabel{#2} \quad #3 \quad #4 \quad #5\par
+% Cocktail Metadata (named arguments):
+%   \cocktailMeta{base=Gin,glass=Rocks,method=Built,ice=Large Cube,strength=High,garnish=Orange Peel}
+% Backward-compatible positional helper:
+%   \cocktailMetaPositional{Rocks}{Built}{Large Cube}{High}{Orange Peel}
+\ExplSyntaxOn
+\tl_new:N \l_cocktail_meta_base_tl
+\tl_new:N \l_cocktail_meta_glass_tl
+\tl_new:N \l_cocktail_meta_method_tl
+\tl_new:N \l_cocktail_meta_ice_tl
+\tl_new:N \l_cocktail_meta_strength_tl
+\tl_new:N \l_cocktail_meta_garnish_tl
+
+\keys_define:nn { cocktail/meta }
+{
+    base     .tl_set:N = \l_cocktail_meta_base_tl,
+    glass    .tl_set:N = \l_cocktail_meta_glass_tl,
+    method   .tl_set:N = \l_cocktail_meta_method_tl,
+    ice      .tl_set:N = \l_cocktail_meta_ice_tl,
+    strength .tl_set:N = \l_cocktail_meta_strength_tl,
+    garnish  .tl_set:N = \l_cocktail_meta_garnish_tl
 }
+
+\cs_new_protected:Npn \cocktail_meta_render:
+{
+    \small
+    \cocktailGlassWithLabel{\tl_use:N \l_cocktail_meta_glass_tl}
+    \quad
+    \cocktailMethodWithLabel{\tl_use:N \l_cocktail_meta_method_tl}
+    \quad
+    \tl_use:N \l_cocktail_meta_ice_tl
+    \quad
+    \tl_use:N \l_cocktail_meta_strength_tl
+    \quad
+    \tl_use:N \l_cocktail_meta_garnish_tl
+    \par
+}
+
+\NewDocumentCommand{\cocktailMeta}{m}
+{
+    \tl_clear:N \l_cocktail_meta_base_tl
+    \tl_clear:N \l_cocktail_meta_glass_tl
+    \tl_clear:N \l_cocktail_meta_method_tl
+    \tl_clear:N \l_cocktail_meta_ice_tl
+    \tl_clear:N \l_cocktail_meta_strength_tl
+    \tl_clear:N \l_cocktail_meta_garnish_tl
+    \keys_set:nn { cocktail/meta } { #1 }
+    \tl_if_blank:VTF \l_cocktail_meta_base_tl
+        { }
+        { \exp_args:NV \setBaseSpirit \l_cocktail_meta_base_tl }
+    \cocktail_meta_render:
+}
+
+\NewDocumentCommand{\cocktailMetaPositional}{m m m m m}
+{
+    \cocktailMeta
+    {
+        glass={#1},
+        method={#2},
+        ice={#3},
+        strength={#4},
+        garnish={#5}
+    }
+}
+\ExplSyntaxOff
 
 % Separate list environments for ingredients and process.
 % These are intentionally independent (no forced row alignment).
@@ -305,7 +365,8 @@
     \end{itemize}
     \end{minipage}\hfill
 }
-\newcommand{\ingredient}[1]{\item #1}
+% Ingredient line is split into quantity and description so formatting can evolve later.
+\newcommand{\ingredient}[2]{\item #1\hspace{0.5em}#2}
 
 \newenvironment{process}{
     \begin{minipage}[t]{0.48\textwidth}
