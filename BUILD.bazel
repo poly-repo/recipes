@@ -5,6 +5,8 @@ copybara_workflow(
     excludes = [
     ],
     includes = [
+        "arararc.yaml",
+        "common/arara/**",
         "common/latex/**",
         "people/mav/recipes/**",
     ],
