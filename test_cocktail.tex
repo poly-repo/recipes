@@ -4,26 +4,43 @@
 \begin{document}
 \pagestyle{empty}
 
+% Mirror the base-spirit edge marker onto the left side of the back page.
+\newcommand{\drawBackMirrorSpiritBar}{
+    \AddToShipoutPictureFG*{%
+        \AtPageUpperLeft{%
+            \begin{tikzpicture}[overlay]
+                \pgfmathsetlengthmacro{\spiritXL}{\spiritStripInset}
+                \draw[draw=black!25,line width=0.2pt] (\spiritXL,0) rectangle ++(\spiritStripWidth,-\paperheight);
+                \foreach \i in {1,2,3,4}{
+                    \draw[draw=black!25,line width=0.2pt] (\spiritXL,-\i*\spiritSegmentHeight) -- ++(\spiritStripWidth,0);
+                }
+                \ifnum\recipeSpiritSegmentIndex=0 \fill[spiritGin] (\spiritXL,0) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+                \ifnum\recipeSpiritSegmentIndex=1 \fill[spiritWhiskey] (\spiritXL,-\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+                \ifnum\recipeSpiritSegmentIndex=2 \fill[spiritRum] (\spiritXL,-2\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+                \ifnum\recipeSpiritSegmentIndex=3 \fill[spiritVodka] (\spiritXL,-3\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+                \ifnum\recipeSpiritSegmentIndex=4 \fill[spiritTequila] (\spiritXL,-4\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+            \end{tikzpicture}%
+        }%
+    }%
+}
+
 % --- FRONT SIDE ---
-\begin{recipe}[\qrcode[height=0.5in]{https://maurizio.link/negroni}]{Negroni}
-% Glass, Method, Ice, Strength, Garnish
-\noindent\cocktailMeta{Rocks}{Built}{Large Cube}{High}{Orange Peel}
+\begin{recipe}{Negroni}
+\noindent\cocktailMeta{base={Gin},glass={Rocks},method={Stirred},ice={Large Cube},strength={High},garnish={Orange Peel}}
 \begin{ingredients}
-\ingredient{30 ml London Dry Gin}
-\ingredient{30 ml Sweet Vermouth}
-\ingredient{30 ml Campari}
+\ingredient{1 oz}{Gin}
+\ingredient{1 oz}{Campari}
+\ingredient{1 oz}{Sweet Vermouth}
 \end{ingredients}
 \begin{process}
-\step{Combine all ingredients in a mixing glass with plenty of ice.}
-\step{Stir for 30 seconds until well-chilled.}
-\step{Strain into a rocks glass over a fresh large ice cube.}
-\step{Express orange oil over the drink and garnish.}
+\step{Add the gin, Campari, and sweet vermouth to a mixing glass filled with ice, and stir until well-chilled.}
+\step{Strain into a rocks glass over a large ice cube.}
+\step{Garnish with an orange peel.}
 \end{process}
 
 \vfill
-
 \begin{recipeinfo}
-    The classic 1:1:1 ratio is a baseline; try a slightly heavier Gin pour (35ml) if using a particularly floral botanical.
+    Classic equal-parts Negroni (1:1:1 gin, Campari, sweet vermouth), per Liquor.com.
 \end{recipeinfo}
 \end{recipe}
 
@@ -34,8 +51,12 @@
     \rule{\textwidth}{0.4pt}
 \end{center}
 \footnotesize
-The Negroni was famously born in Florence at Caffè Casoni around 1919. Legend states that Count Camillo Negroni asked his bartender, Fosco Scarselli, to stiffen his favorite cocktail—the Americano—by replacing the soda water with gin. Scarselli also swapped the lemon garnish for orange to signify that it was a different drink.
+The Negroni is widely traced to early 20th-century Florence, where Count Camillo Negroni reportedly asked for his Americano to be strengthened by replacing soda water with gin. The orange peel garnish, used instead of lemon, helped distinguish the new serve from the original.
 
-This "Americano with Gin" eventually became the namesake of the Count, and remains a cornerstone of the Italian *aperitivo* tradition.
+That simple change produced one of the defining bitter stirred classics. The equal-parts structure (gin, Campari, and sweet vermouth) made the drink easy to remember and endlessly adaptable, inspiring countless modern riffs while the original remains a benchmark of Italian \textit{aperitivo} culture.
+
+\vfill
+\drawBackMirrorSpiritBar
+\noindent\hfill\qrcode[height=0.42in]{https://www.liquor.com/recipes/negroni/}
 
 \end{document}
