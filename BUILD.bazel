@@ -1,4 +1,13 @@
+load("//build/bzl:python.bzl", "o_py_binary")
 load("//build/copybara:copybara.bzl", "copybara_workflow")
+
+o_py_binary(
+    name = "cocktail_yaml_to_tex",
+    srcs = ["cocktail_yaml_to_tex.py"],
+    main = "cocktail_yaml_to_tex.py",
+    visibility = ["//visibility:public"],
+    deps = ["@pip//pyyaml"],
+)
 
 copybara_workflow(
     name = "recipes",
