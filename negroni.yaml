@@ -1,0 +1,37 @@
+cocktail: Negroni
+
+ingredients:
+  - name: Gin
+    amount: 1
+    unit: oz
+    abv: 40
+  - name: Campari
+    amount: 1
+    unit: oz
+    abv: 24
+  - name: Sweet Vermouth
+    amount: 1
+    unit: oz
+    abv: 16
+
+process: stirring
+glass: rock
+garnish: orange peel
+
+steps:
+  - Add ingredients to mixing glass with ice.
+  - Stir until chilled.
+  - Strain into rocks glass.
+
+notes: Classic equal-parts cocktail.
+
+history: |
+  The Negroni is widely traced to early 20th-century Florence,
+  where Count Camillo Negroni asked for his Americano to be
+  strengthened with gin instead of soda.
+
+  This simple substitution created a bold, bitter cocktail
+  that became a cornerstone of aperitivo culture.
+
+  Today, the Negroni remains one of the most influential
+  classic cocktails, inspiring countless variations.
