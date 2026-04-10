@@ -123,7 +123,7 @@
 \setmonofont{JetBrains Mono}
 \newfontfamily\sketchfont{Fredericka the Great}
 \newcommand{\recipeTitle}[1]{{\color[HTML]{A51C30} \Huge \sketchfont #1}}
-\newcommand{\recipeTitleDivider}{\par\vspace{2pt}\noindent\rule{\textwidth}{0.4pt}\par\vspace{2pt}}
+\newcommand{\recipeTitleDivider}{\par\vspace{1pt}}
 
 % The Footer Box with the L-bracket
 \newtcolorbox{recipeinfo}{
@@ -361,12 +361,21 @@
     \setlength{\itemsep}{1pt}
     \setlength{\parskip}{0pt}
     \setlength{\topsep}{2pt}
+    \let\group\recipeIngredientGroup
 }{
     \end{itemize}
     \end{minipage}\hfill
 }
 % Ingredient line is split into quantity and description so formatting can evolve later.
 \newcommand{\ingredient}[2]{\item #1\hspace{0.5em}#2}
+\newlength{\recipeIngredientGroupOffset}
+\newcommand{\recipeIngredientGroup}[1]{%
+    \settowidth{\recipeIngredientGroupOffset}{\labelitemi}%
+    \item[]\vspace{2pt}%
+    \hspace*{-\labelsep}\hspace*{-\recipeIngredientGroupOffset}%
+    \textbf{\color{recipeRed}\footnotesize #1}%
+    \vspace{-1pt}%
+}
 
 \newenvironment{process}{
     \begin{minipage}[t]{0.48\textwidth}

@@ -111,7 +111,7 @@
     \thispagestyle{empty}%
 }
 
-\newcommand{\drawRecipeCutLine}{%
+\newcommand{\drawRecipeTopCutLine}{%
     \AddToShipoutPictureFG*{%
         \AtPageUpperLeft{%
             \begin{tikzpicture}[overlay]
@@ -122,18 +122,27 @@
     }%
 }
 
-\newcommand{\drawRecipeCutLineIfNeeded}{%
-    \ifnum\value{recipeCardIndex}>0
-        \pgfmathtruncatemacro{\recipeCutLineRemainder}{mod(\value{recipeCardIndex},4)}%
-        \ifnum\recipeCutLineRemainder>0
-            \drawRecipeCutLine
-        \fi
+\newcommand{\drawRecipeBottomCutLine}{%
+    \AddToShipoutPictureFG*{%
+        \AtPageUpperLeft{%
+            \begin{tikzpicture}[overlay]
+                \draw[draw=black!50,line width=0.2pt,dash pattern=on 0.35pt off 1.7pt]
+                    (-6.75in,-\paperheight) -- (6in,-\paperheight);
+            \end{tikzpicture}%
+        }%
+    }%
+}
+
+\newcommand{\drawRecipeTopCutLineIfNeeded}{%
+    \pgfmathtruncatemacro{\recipeCutLineRemainder}{mod(\value{recipeCardIndex},4)}%
+    \ifnum\recipeCutLineRemainder=0
+        \drawRecipeTopCutLine
     \fi
 }
 
 \RenewDocumentEnvironment{recipe}{ O{} m }{%
     \ifnum\value{recipeCardIndex}>0\clearpage\fi
-    \drawRecipeCutLineIfNeeded
+    \drawRecipeTopCutLineIfNeeded
     \frontCardMargins
     \stepcounter{recipeCardIndex}%
     \pagestyle{empty}%
@@ -143,6 +152,7 @@
     \recipeTitleDivider
 }{%
     \par
+    \drawRecipeBottomCutLine
 }
 
 % Mirror the base-spirit edge marker onto the left side of the back page.
@@ -172,12 +182,17 @@
 \small\raggedright
 \cocktailGlassWithLabel{Rocks}\quad
 \cocktailMethodWithLabel{Stirred}\quad
-Large Cube \quad High\quad Orange Peel
-\end{minipage}\par
+\end{minipage}\par\vspace{6pt}
 \begin{ingredients}
 \ingredient{1 oz}{Gin}
 \ingredient{1 oz}{Campari}
 \ingredient{1 oz}{Sweet Vermouth}
+\group{Garnish}
+\ingredient{Orange Peel}
+\group{Glassware}
+\ingredient{Rocks}
+\group{Preparation}
+\ingredient{stirred}
 \end{ingredients}
 \begin{process}
 \step{Add the gin, Campari, and sweet vermouth to a mixing glass filled with ice, and stir until well-chilled.}
@@ -225,112 +240,7 @@ Large Cube \quad High\quad Orange Peel
 \cocktailGlassWithLabel{Rocks}\quad
 \cocktailMethodWithLabel{Stirred}\quad
 Large Cube \quad High\quad Orange Peel
-\end{minipage}\par
-\begin{ingredients}
-\ingredient{1 oz}{Gin}
-\ingredient{1 oz}{Campari}
-\ingredient{1 oz}{Sweet Vermouth}
-\end{ingredients}
-\begin{process}
-\step{Add the gin, Campari, and sweet vermouth to a mixing glass filled with ice, and stir until well-chilled.}
-\step{Strain into a rocks glass over a large ice cube.}
-\step{Garnish with an orange peel.}
-\end{process}
-
-\vfill
-\begin{recipeinfo}
-    Classic equal-parts Negroni (1:1:1 gin, Campari, sweet vermouth), per Liquor.com.
-\end{recipeinfo}
-
-% --- BACK SIDE ---
-\back
-\begin{center}
-    \small\textsc{\color{recipeRed} History \& Provenance}
-    \rule{\textwidth}{0.4pt}
-\end{center}
-\begin{multicols}{2}
-  \footnotesize The Negroni is widely traced to early 20th-century
-  Florence, where Count Camillo Negroni reportedly asked for his
-  Americano to be strengthened by replacing soda water with gin. The
-  orange peel garnish, used instead of lemon, helped distinguish the
-  new serve from the original.
-
-  That simple change produced one of the defining bitter stirred
-  classics. The equal-parts structure (gin, Campari, and sweet
-  vermouth) made the drink easy to remember and endlessly adaptable,
-  inspiring countless modern riffs while the original remains a
-  benchmark of Italian \textit{aperitivo} culture.
-\end{multicols}
-
-\vfill
-\drawBackMirrorSpiritBar
-\noindent\hfill\qrcode[height=0.84in]{https://www.liquor.com/recipes/negroni/}
-
-
-\end{recipe}
-
-
-% --- FRONT SIDE ---
-\begin{recipe}{Negroni}
-\setBaseSpirit{Gin}
-\noindent\begin{minipage}{\textwidth}
-\small\raggedright
-\cocktailGlassWithLabel{Rocks}\quad
-\cocktailMethodWithLabel{Stirred}\quad
-Large Cube \quad High\quad Orange Peel
-\end{minipage}\par
-\begin{ingredients}
-\ingredient{1 oz}{Gin}
-\ingredient{1 oz}{Campari}
-\ingredient{1 oz}{Sweet Vermouth}
-\end{ingredients}
-\begin{process}
-\step{Add the gin, Campari, and sweet vermouth to a mixing glass filled with ice, and stir until well-chilled.}
-\step{Strain into a rocks glass over a large ice cube.}
-\step{Garnish with an orange peel.}
-\end{process}
-
-\vfill
-\begin{recipeinfo}
-    Classic equal-parts Negroni (1:1:1 gin, Campari, sweet vermouth), per Liquor.com.
-\end{recipeinfo}
-
-% --- BACK SIDE ---
-\back
-\begin{center}
-    \small\textsc{\color{recipeRed} History \& Provenance}
-    \rule{\textwidth}{0.4pt}
-\end{center}
-\begin{multicols}{2}
-  \footnotesize The Negroni is widely traced to early 20th-century
-  Florence, where Count Camillo Negroni reportedly asked for his
-  Americano to be strengthened by replacing soda water with gin. The
-  orange peel garnish, used instead of lemon, helped distinguish the
-  new serve from the original.
-
-  That simple change produced one of the defining bitter stirred
-  classics. The equal-parts structure (gin, Campari, and sweet
-  vermouth) made the drink easy to remember and endlessly adaptable,
-  inspiring countless modern riffs while the original remains a
-  benchmark of Italian \textit{aperitivo} culture.
-\end{multicols}
-
-\vfill
-\drawBackMirrorSpiritBar
-\noindent\hfill\qrcode[height=0.84in]{https://www.liquor.com/recipes/negroni/}
-
-
-\end{recipe}
-
-% --- FRONT SIDE ---
-\begin{recipe}{Negroni}
-\setBaseSpirit{Gin}
-\noindent\begin{minipage}{\textwidth}
-\small\raggedright
-\cocktailGlassWithLabel{Rocks}\quad
-\cocktailMethodWithLabel{Stirred}\quad
-Large Cube \quad High\quad Orange Peel
-\end{minipage}\par
+\end{minipage}\par\vspace{6pt}
 \begin{ingredients}
 \ingredient{1 oz}{Gin}
 \ingredient{1 oz}{Campari}
@@ -383,7 +293,112 @@ Large Cube \quad High\quad Orange Peel
 \cocktailGlassWithLabel{Rocks}\quad
 \cocktailMethodWithLabel{Stirred}\quad
 Large Cube \quad High\quad Orange Peel
-\end{minipage}\par
+\end{minipage}\par\vspace{6pt}
+\begin{ingredients}
+\ingredient{1 oz}{Gin}
+\ingredient{1 oz}{Campari}
+\ingredient{1 oz}{Sweet Vermouth}
+\end{ingredients}
+\begin{process}
+\step{Add the gin, Campari, and sweet vermouth to a mixing glass filled with ice, and stir until well-chilled.}
+\step{Strain into a rocks glass over a large ice cube.}
+\step{Garnish with an orange peel.}
+\end{process}
+
+\vfill
+\begin{recipeinfo}
+    Classic equal-parts Negroni (1:1:1 gin, Campari, sweet vermouth), per Liquor.com.
+\end{recipeinfo}
+
+% --- BACK SIDE ---
+\back
+\begin{center}
+    \small\textsc{\color{recipeRed} History \& Provenance}
+    \rule{\textwidth}{0.4pt}
+\end{center}
+\begin{multicols}{2}
+  \footnotesize The Negroni is widely traced to early 20th-century
+  Florence, where Count Camillo Negroni reportedly asked for his
+  Americano to be strengthened by replacing soda water with gin. The
+  orange peel garnish, used instead of lemon, helped distinguish the
+  new serve from the original.
+
+  That simple change produced one of the defining bitter stirred
+  classics. The equal-parts structure (gin, Campari, and sweet
+  vermouth) made the drink easy to remember and endlessly adaptable,
+  inspiring countless modern riffs while the original remains a
+  benchmark of Italian \textit{aperitivo} culture.
+\end{multicols}
+
+\vfill
+\drawBackMirrorSpiritBar
+\noindent\hfill\qrcode[height=0.84in]{https://www.liquor.com/recipes/negroni/}
+
+
+\end{recipe}
+
+% --- FRONT SIDE ---
+\begin{recipe}{Negroni}
+\setBaseSpirit{Gin}
+\noindent\begin{minipage}{\textwidth}
+\small\raggedright
+\cocktailGlassWithLabel{Rocks}\quad
+\cocktailMethodWithLabel{Stirred}\quad
+Large Cube \quad High\quad Orange Peel
+\end{minipage}\par\vspace{6pt}
+\begin{ingredients}
+\ingredient{1 oz}{Gin}
+\ingredient{1 oz}{Campari}
+\ingredient{1 oz}{Sweet Vermouth}
+\end{ingredients}
+\begin{process}
+\step{Add the gin, Campari, and sweet vermouth to a mixing glass filled with ice, and stir until well-chilled.}
+\step{Strain into a rocks glass over a large ice cube.}
+\step{Garnish with an orange peel.}
+\end{process}
+
+\vfill
+\begin{recipeinfo}
+    Classic equal-parts Negroni (1:1:1 gin, Campari, sweet vermouth), per Liquor.com.
+\end{recipeinfo}
+
+% --- BACK SIDE ---
+\back
+\begin{center}
+    \small\textsc{\color{recipeRed} History \& Provenance}
+    \rule{\textwidth}{0.4pt}
+\end{center}
+\begin{multicols}{2}
+  \footnotesize The Negroni is widely traced to early 20th-century
+  Florence, where Count Camillo Negroni reportedly asked for his
+  Americano to be strengthened by replacing soda water with gin. The
+  orange peel garnish, used instead of lemon, helped distinguish the
+  new serve from the original.
+
+  That simple change produced one of the defining bitter stirred
+  classics. The equal-parts structure (gin, Campari, and sweet
+  vermouth) made the drink easy to remember and endlessly adaptable,
+  inspiring countless modern riffs while the original remains a
+  benchmark of Italian \textit{aperitivo} culture.
+\end{multicols}
+
+\vfill
+\drawBackMirrorSpiritBar
+\noindent\hfill\qrcode[height=0.84in]{https://www.liquor.com/recipes/negroni/}
+
+
+\end{recipe}
+
+
+% --- FRONT SIDE ---
+\begin{recipe}{Negroni}
+\setBaseSpirit{Gin}
+\noindent\begin{minipage}{\textwidth}
+\small\raggedright
+\cocktailGlassWithLabel{Rocks}\quad
+\cocktailMethodWithLabel{Stirred}\quad
+Large Cube \quad High\quad Orange Peel
+\end{minipage}\par\vspace{6pt}
 \begin{ingredients}
 \ingredient{1 oz}{Gin}
 \ingredient{1 oz}{Campari}
