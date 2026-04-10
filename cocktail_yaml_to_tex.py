@@ -14,8 +14,11 @@ import os
 from pathlib import Path
 from typing import Any, Iterable
 
+from jsonschema import Draft202012Validator
 import yaml
 
+
+SCHEMA_FILE_NAME = "cocktail.schema.yaml"
 
 BASE_SPIRIT_MAP: dict[str, str] = {
     "gin": "Gin",
@@ -26,50 +29,62 @@ BASE_SPIRIT_MAP: dict[str, str] = {
     "tequila": "Tequila",
 }
 
-GLASS_MAP: dict[str, str] = {
-    "rock": "Rocks",
-    "rocks": "Rocks",
-    "rock glass": "Rock Glass",
-    "old fashioned": "Old Fashioned",
-    "old-fashioned": "Old Fashioned",
+GLASS_CANONICAL_MAP: dict[str, str] = {
+    # Canonical recipe-card.cls glass keys.
+    "champagneflute": "Champagne Flute",
     "collins": "Collins",
-    "highball": "Highball",
-    "martini": "Martini",
+    "collinsglass": "Collins",
     "coupe": "Coupe",
-    "nick and nora": "Nick and Nora",
-    "nick & nora": "Nick and Nora",
-    "champagne flute": "Champagne Flute",
+    "coupeglass": "Coupe",
+    "highball": "Highball",
+    "highballglass": "Highball",
     "hurricane": "Hurricane",
-    "wine glass": "Wine Glass",
-    "tiki mug": "Tiki Mug",
+    "hurricaneglass": "Hurricane",
+    "martini": "Martini",
+    "martiniglass": "Martini",
+    "nickandnora": "Nick and Nora",
+    "nickandnoraglass": "Nick and Nora",
+    "rocks": "Rocks",
+    "rockglass": "Rocks",
+    "oldfashioned": "Old Fashioned",
+    "tikimug": "Tiki Mug",
+    "tiki": "Tiki Mug",
+    "wine": "Wine",
+    "wineglass": "Wine",
+    # Practical aliases.
+    "rock": "Rocks",
+    "rocksglass": "Rocks",
+    "oldfashionedglass": "Old Fashioned",
 }
 
-METHOD_MAP: dict[str, str] = {
-    "stir": "Stirred",
-    "stirred": "Stirred",
-    "stirring": "Stirred",
-    "shake": "Shake",
-    "shaken": "Shaken",
-    "shaking": "Shake",
-    "build": "Build",
-    "built": "Built",
-    "building": "Build",
-    "muddle": "Muddled",
-    "muddled": "Muddled",
-    "muddling": "Muddled",
+METHOD_CANONICAL_MAP: dict[str, str] = {
+    # Canonical recipe-card.cls method keys.
     "blend": "Blend",
-    "blended": "Blended",
+    "blended": "Blend",
+    "build": "Build",
+    "built": "Build",
+    "flame": "Flame",
+    "flamed": "Flame",
+    "float": "Float",
+    "floated": "Float",
+    "layer": "Layer",
+    "layered": "Layer",
+    "muddle": "Muddle",
+    "muddled": "Muddle",
+    "reversedryshake": "Reverse Dry Shake",
+    "shake": "Shake",
+    "shaken": "Shake",
+    "stir": "Stir",
+    "stirred": "Stir",
+    # Practical aliases.
     "blending": "Blend",
-    "layer": "Layered",
-    "layered": "Layered",
-    "layering": "Layered",
-    "float": "Floated",
-    "floated": "Floated",
-    "floating": "Floated",
-    "flame": "Flamed",
-    "flamed": "Flamed",
-    "flaming": "Flamed",
-    "reverse dry shake": "Reverse Dry Shake",
+    "building": "Build",
+    "flaming": "Flame",
+    "floating": "Float",
+    "layering": "Layer",
+    "muddling": "Muddle",
+    "shaking": "Shake",
+    "stirring": "Stir",
 }
 
 
@@ -110,12 +125,116 @@ def _escape_latex(text: str) -> str:
     return escaped
 
 
+def _normalize_recipe_card_key(value: Any) -> str:
+    return (
+        _to_text(value)
+        .lower()
+        .replace("&", "and")
+        .replace("~", "")
+        .replace("-", "")
+        .replace("_", "")
+        .replace(" ", "")
+    )
+
+
+def _resolve_schema_path() -> Path:
+    candidate_paths = [Path(__file__).resolve().with_name(SCHEMA_FILE_NAME)]
+    workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
+    if workspace_dir:
+        candidate_paths.append(Path(workspace_dir) / "people/mav/recipes" / SCHEMA_FILE_NAME)
+    for candidate in candidate_paths:
+        if candidate.exists():
+            return candidate
+    searched = ", ".join(str(path) for path in candidate_paths)
+    raise FileNotFoundError(
+        f"Unable to locate {SCHEMA_FILE_NAME}; searched: {searched}"
+    )
+
+
+def _load_schema(path: Path) -> dict[str, Any]:
+    parsed = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(parsed, dict):
+        raise ValueError(f"Schema at {path} must be a YAML mapping/object.")
+    return parsed
+
+
+def _json_path(path_segments: Iterable[Any]) -> str:
+    path = "$"
+    for segment in path_segments:
+        if isinstance(segment, int):
+            path += f"[{segment}]"
+        else:
+            path += f".{segment}"
+    return path
+
+
+def _validate_against_schema(
+    cocktails: list[dict[str, Any]],
+    *,
+    schema: dict[str, Any],
+) -> None:
+    validator = Draft202012Validator(schema)
+    for index, doc in enumerate(cocktails, start=1):
+        errors = sorted(
+            validator.iter_errors(doc),
+            key=lambda error: (_json_path(error.absolute_path), error.message),
+        )
+        if not errors:
+            continue
+        details = [
+            f"- {_json_path(error.absolute_path)}: {error.message}"
+            for error in errors[:10]
+        ]
+        if len(errors) > 10:
+            details.append(f"- ... and {len(errors) - 10} additional error(s)")
+        detail_text = "\n".join(details)
+        raise ValueError(
+            f"YAML document #{index} failed schema validation:\n{detail_text}"
+        )
+
+
+def _canonical_base_spirit_value(value: Any) -> str | None:
+    if not _to_text(value):
+        return None
+    return BASE_SPIRIT_MAP.get(_normalize_key(value))
+
+
+def _canonical_glass_value(value: Any) -> str | None:
+    if not _to_text(value):
+        return None
+    return GLASS_CANONICAL_MAP.get(_normalize_recipe_card_key(value))
+
+
+def _canonical_method_value(value: Any) -> str | None:
+    if not _to_text(value):
+        return None
+    return METHOD_CANONICAL_MAP.get(_normalize_recipe_card_key(value))
+
+
+def _normalize_alias_fields(doc: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(doc)
+    for key in ("base", "base_spirit"):
+        if key in normalized:
+            mapped_base = _canonical_base_spirit_value(normalized[key])
+            if mapped_base:
+                normalized[key] = mapped_base
+    if "glass" in normalized:
+        mapped_glass = _canonical_glass_value(normalized["glass"])
+        if mapped_glass:
+            normalized["glass"] = mapped_glass
+    for key in ("method", "process"):
+        if key in normalized:
+            mapped_method = _canonical_method_value(normalized[key])
+            if mapped_method:
+                normalized[key] = mapped_method
+    return normalized
+
+
 def _canonical_base_spirit(doc: dict[str, Any]) -> str:
     base = doc.get("base") or doc.get("base_spirit")
-    if base:
-        mapped = BASE_SPIRIT_MAP.get(_normalize_key(base))
-        if mapped:
-            return mapped
+    mapped_base = _canonical_base_spirit_value(base)
+    if mapped_base:
+        return mapped_base
     ingredients = doc.get("ingredients")
     if isinstance(ingredients, list):
         for entry in ingredients:
@@ -123,7 +242,7 @@ def _canonical_base_spirit(doc: dict[str, Any]) -> str:
                 ingredient_name = entry.get("name")
             else:
                 ingredient_name = entry
-            mapped = BASE_SPIRIT_MAP.get(_normalize_key(ingredient_name))
+            mapped = _canonical_base_spirit_value(ingredient_name)
             if mapped:
                 return mapped
     return "Gin"
@@ -133,16 +252,14 @@ def _canonical_glass(doc: dict[str, Any]) -> str:
     raw = doc.get("glass")
     if raw is None:
         return "Rocks"
-    key = _normalize_key(raw)
-    return GLASS_MAP.get(key, _to_text(raw).title())
+    return _canonical_glass_value(raw) or _to_text(raw).title()
 
 
 def _canonical_method(doc: dict[str, Any]) -> str:
     raw = doc.get("method") or doc.get("process")
     if raw is None:
-        return "Stirred"
-    key = _normalize_key(raw)
-    return METHOD_MAP.get(key, _to_text(raw).title())
+        return "Stir"
+    return _canonical_method_value(raw) or _to_text(raw).title()
 
 
 def _render_ingredients(doc: dict[str, Any], *, glass: str, method: str) -> list[str]:
@@ -296,9 +413,12 @@ def _load_cocktails(path: Path) -> list[dict[str, Any]]:
     for index, doc in enumerate(parsed, start=1):
         if not isinstance(doc, dict):
             raise ValueError(f"YAML document #{index} must be a mapping/object.")
-        cocktails.append(doc)
+        cocktails.append(_normalize_alias_fields(doc))
     if not cocktails:
         raise ValueError("Input YAML contained no cocktail documents.")
+    schema_path = _resolve_schema_path()
+    schema = _load_schema(schema_path)
+    _validate_against_schema(cocktails, schema=schema)
     return cocktails
 
 

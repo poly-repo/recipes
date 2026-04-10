@@ -1,0 +1,220 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://omega.local/schemas/cocktail.schema.yaml"
+title: "Cocktail Recipe Document"
+description: |
+  Schema for one cocktail YAML document.
+
+  A YAML file can contain multiple cocktails separated by `---`.
+  In that case, each document should conform to this schema.
+type: object
+additionalProperties: false
+required:
+  - cocktail
+  - ingredients
+  - steps
+properties:
+  cocktail:
+    type: string
+    minLength: 1
+    description: Cocktail display name.
+
+  base:
+    $ref: "#/$defs/baseSpirit"
+  base_spirit:
+    $ref: "#/$defs/baseSpirit"
+
+  ingredients:
+    type: array
+    minItems: 1
+    items:
+      oneOf:
+        - $ref: "#/$defs/ingredientObject"
+        - type: string
+          minLength: 1
+          description: Shorthand ingredient name.
+
+  process:
+    $ref: "#/$defs/method"
+  method:
+    $ref: "#/$defs/method"
+
+  glass:
+    $ref: "#/$defs/glassware"
+  garnish:
+    type: string
+    minLength: 1
+
+  steps:
+    type: array
+    minItems: 1
+    items:
+      type: string
+      minLength: 1
+
+  notes:
+    type: string
+    minLength: 1
+  history:
+    type: string
+    minLength: 1
+
+  url:
+    $ref: "#/$defs/url"
+  source_url:
+    $ref: "#/$defs/url"
+  reference_url:
+    $ref: "#/$defs/url"
+  link:
+    $ref: "#/$defs/url"
+  source:
+    type: object
+    additionalProperties: false
+    properties:
+      url:
+        $ref: "#/$defs/url"
+      link:
+        $ref: "#/$defs/url"
+
+$defs:
+  url:
+    type: string
+    minLength: 1
+    pattern: "^https?://"
+
+  baseSpirit:
+    type: string
+    description: Canonical base spirit segment used by recipe-card.cls.
+    enum:
+      - Gin
+      - Whiskey
+      - Rum
+      - Vodka
+      - Tequila
+      - gin
+      - whiskey
+      - whisky
+      - rum
+      - vodka
+      - tequila
+
+  ingredientObject:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        minLength: 1
+      amount:
+        oneOf:
+          - type: number
+          - type: string
+            minLength: 1
+      unit:
+        type: string
+        minLength: 1
+      abv:
+        type: number
+        minimum: 0
+        maximum: 100
+
+  glassware:
+    type: string
+    description: |
+      Glassware labels from `common/latex/recipes/recipe-card.cls`.
+      Includes canonical display labels and practical aliases.
+    enum:
+      - Champagne Flute
+      - Collins
+      - Collins Glass
+      - Coupe
+      - Coupe Glass
+      - Highball
+      - Highball Glass
+      - Hurricane
+      - Hurricane Glass
+      - Martini
+      - Martini Glass
+      - Nick and Nora
+      - Nick & Nora
+      - Nick and Nora Glass
+      - Rocks
+      - Rock Glass
+      - Old Fashioned
+      - Tiki Mug
+      - Tiki
+      - Wine
+      - Wine Glass
+      - champagne flute
+      - collins
+      - collins glass
+      - coupe
+      - coupe glass
+      - highball
+      - highball glass
+      - hurricane
+      - hurricane glass
+      - martini
+      - martini glass
+      - nick and nora
+      - nick & nora
+      - nick and nora glass
+      - rocks
+      - rock
+      - rock glass
+      - old fashioned
+      - old-fashioned
+      - tiki mug
+      - tiki
+      - wine
+      - wine glass
+
+  method:
+    type: string
+    description: |
+      Preparation method labels from `common/latex/recipes/recipe-card.cls`.
+      Includes canonical labels and common gerund aliases.
+    enum:
+      - Blend
+      - Blended
+      - Build
+      - Built
+      - Flame
+      - Flamed
+      - Float
+      - Floated
+      - Layer
+      - Layered
+      - Muddle
+      - Muddled
+      - Reverse Dry Shake
+      - Shake
+      - Shaken
+      - Stir
+      - Stirred
+      - blend
+      - blended
+      - blending
+      - build
+      - built
+      - building
+      - flame
+      - flamed
+      - flaming
+      - float
+      - floated
+      - floating
+      - layer
+      - layered
+      - layering
+      - muddle
+      - muddled
+      - muddling
+      - reverse dry shake
+      - shake
+      - shaken
+      - shaking
+      - stir
+      - stirred
+      - stirring
