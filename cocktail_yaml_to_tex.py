@@ -10,8 +10,10 @@ with `.tex`.
 from __future__ import annotations
 
 import argparse
+import html
 import os
 from pathlib import Path
+import re
 from typing import Any, Iterable
 
 from jsonschema import Draft202012Validator
@@ -19,6 +21,8 @@ import yaml
 
 
 SCHEMA_FILE_NAME = "cocktail.schema.yaml"
+RECIPES_SITE_BASE_URL = "https://poly-repo.github.io/recipes"
+BACK_PAGE_QR_HEIGHT = "0.72in"
 
 BASE_SPIRIT_MAP: dict[str, str] = {
     "gin": "Gin",
@@ -91,6 +95,11 @@ METHOD_CANONICAL_MAP: dict[str, str] = {
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("yaml_path", type=Path, help="Input cocktail YAML file.")
+    parser.add_argument(
+        "--markdown",
+        action="store_true",
+        help="Write one Markdown file per cocktail document instead of TeX output.",
+    )
     return parser.parse_args()
 
 
@@ -307,32 +316,234 @@ def _render_steps(doc: dict[str, Any]) -> list[str]:
     return lines
 
 
-def _history_text(doc: dict[str, Any]) -> str:
+def _close_list_environments(lines: list[str], list_stack: list[str], *, keep_depth: int) -> None:
+    while len(list_stack) > keep_depth:
+        list_type = list_stack.pop()
+        lines.append(rf"\end{{{list_type}}}")
+
+
+def _history_markdown_lines(doc: dict[str, Any]) -> list[str]:
     raw = _to_text(doc.get("history"))
     if not raw:
-        return "No historical notes provided."
-    paragraphs: list[str] = []
-    for paragraph in raw.split("\n\n"):
-        normalized = " ".join(part.strip() for part in paragraph.splitlines() if part.strip())
-        if normalized:
-            paragraphs.append(_escape_latex(normalized))
-    if not paragraphs:
-        return "No historical notes provided."
-    return "\n\n  ".join(paragraphs)
+        return ["No historical notes provided."]
+
+    lines: list[str] = []
+    paragraph_lines: list[str] = []
+    list_stack: list[str] = []
+
+    heading_pattern = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+    unordered_list_pattern = re.compile(r"^(\s*)[-*+]\s+(.+?)\s*$")
+    ordered_list_pattern = re.compile(r"^(\s*)\d+[.)]\s+(.+?)\s*$")
+
+    def flush_paragraph() -> None:
+        if not paragraph_lines:
+            return
+        text = " ".join(part.strip() for part in paragraph_lines if part.strip())
+        paragraph_lines.clear()
+        if text:
+            lines.append(_escape_latex(text))
+            lines.append(r"\par")
+
+    for raw_line in raw.splitlines():
+        line = raw_line.rstrip()
+
+        heading_match = heading_pattern.match(line)
+        if heading_match:
+            flush_paragraph()
+            _close_list_environments(lines, list_stack, keep_depth=0)
+            heading_level = len(heading_match.group(1))
+            # History block already lives under a "## History & Provenance" section,
+            # so treat inline headings as relative levels (e.g. "#" behaves like "###").
+            effective_level = min(6, heading_level + 2)
+            heading_text = _escape_latex(heading_match.group(2).strip())
+            if not heading_text:
+                continue
+            # Encourage a column/page break before the heading if too little room remains,
+            # keeping title + first content line together when possible.
+            lines.append(r"\par\filbreak")
+            if effective_level <= 3:
+                lines.append(
+                    rf"\noindent{{\color{{recipeRed}}\textbf{{\scriptsize {heading_text}}}}}\par"
+                )
+            elif effective_level == 4:
+                lines.append(
+                    rf"\noindent{{\color{{recipeRed}}\textbf{{\tiny {heading_text}}}}}\par"
+                )
+            else:
+                lines.append(
+                    rf"\noindent{{\color{{recipeRed}}\textit{{\tiny {heading_text}}}}}\par"
+                )
+            continue
+
+        unordered_list_match = unordered_list_pattern.match(line)
+        ordered_list_match = ordered_list_pattern.match(line)
+        list_match = unordered_list_match or ordered_list_match
+        if list_match:
+            flush_paragraph()
+            list_type = "itemize" if unordered_list_match else "enumerate"
+            indent_prefix = list_match.group(1).replace("\t", "  ")
+            desired_depth = max(1, len(indent_prefix) // 2 + 1)
+            if desired_depth > len(list_stack) + 1:
+                desired_depth = len(list_stack) + 1
+
+            _close_list_environments(lines, list_stack, keep_depth=desired_depth)
+            if len(list_stack) == desired_depth and list_stack and list_stack[-1] != list_type:
+                _close_list_environments(lines, list_stack, keep_depth=desired_depth - 1)
+            while len(list_stack) < desired_depth:
+                lines.append(rf"\begin{{{list_type}}}")
+                lines.append(r"\setlength{\itemsep}{0pt}")
+                lines.append(r"\setlength{\parskip}{0pt}")
+                lines.append(r"\setlength{\topsep}{1pt}")
+                list_stack.append(list_type)
+
+            item_text = _escape_latex(list_match.group(2).strip())
+            if item_text:
+                lines.append(rf"\item {item_text}")
+            else:
+                lines.append(r"\item")
+            continue
+
+        if not line.strip():
+            flush_paragraph()
+            continue
+
+        if list_stack:
+            _close_list_environments(lines, list_stack, keep_depth=0)
+        paragraph_lines.append(line.strip())
+
+    flush_paragraph()
+    _close_list_environments(lines, list_stack, keep_depth=0)
+
+    while lines and lines[-1] == r"\par":
+        lines.pop()
+
+    if not lines:
+        return ["No historical notes provided."]
+    return lines
 
 
-def _source_url(doc: dict[str, Any]) -> str:
-    for key in ("url", "source_url", "reference_url", "link"):
-        value = _to_text(doc.get(key))
-        if value:
-            return value
-    source = doc.get("source")
-    if isinstance(source, dict):
-        for key in ("url", "link"):
-            value = _to_text(source.get(key))
-            if value:
-                return value
-    return ""
+def _slugify(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "-", value.strip().lower())
+    slug = normalized.strip("-")
+    return slug or "untitled-cocktail"
+
+
+def _recipe_site_url(doc: dict[str, Any]) -> str:
+    name = _to_text(doc.get("cocktail") or doc.get("name") or "untitled-cocktail")
+    slug = _slugify(name)
+    return f"{RECIPES_SITE_BASE_URL}/cocktails/{slug}"
+
+
+def _ingredient_sections(doc: dict[str, Any], *, glass: str, method: str) -> list[tuple[str, list[str]]]:
+    ingredients_items: list[str] = []
+    raw_ingredients = doc.get("ingredients")
+    if isinstance(raw_ingredients, list):
+        for ingredient in raw_ingredients:
+            if isinstance(ingredient, dict):
+                amount = _to_text(ingredient.get("amount"))
+                unit = _to_text(ingredient.get("unit"))
+                amount_label = " ".join(part for part in [amount, unit] if part).strip()
+                name = _to_text(ingredient.get("name"))
+            else:
+                amount_label = ""
+                name = _to_text(ingredient)
+            if not name:
+                continue
+            ingredients_items.append(" ".join(part for part in [amount_label, name] if part).strip())
+
+    sections: list[tuple[str, list[str]]] = [("Ingredients", ingredients_items)]
+    garnish = _to_text(doc.get("garnish"))
+    if garnish:
+        sections.append(("Garnish", [garnish.title()]))
+    sections.append(("Glassware", [glass]))
+    sections.append(("Preparation", [method]))
+    return sections
+
+
+def _render_markdown_sections(sections: list[tuple[str, list[str]]]) -> list[str]:
+    lines: list[str] = []
+    for section_title, items in sections:
+        if section_title != "Ingredients":
+            lines.append(f"**{section_title}**")
+        if items:
+            for item in items:
+                lines.append(f"- {item}")
+        else:
+            lines.append("- None")
+        lines.append("")
+    return lines
+
+
+def _render_markdown_sections_html(sections: list[tuple[str, list[str]]]) -> list[str]:
+    lines: list[str] = []
+    for section_title, items in sections:
+        if section_title != "Ingredients":
+            lines.append(f"      <p><strong>{html.escape(section_title)}</strong></p>")
+        lines.append("      <ul>")
+        if items:
+            for item in items:
+                lines.append(f"        <li>{html.escape(item)}</li>")
+        else:
+            lines.append("        <li>None</li>")
+        lines.append("      </ul>")
+    return lines
+
+
+def _render_markdown_recipe(doc: dict[str, Any]) -> str:
+    title = _to_text(doc.get("cocktail") or doc.get("name") or "Untitled Cocktail")
+    glass = _canonical_glass(doc)
+    method = _canonical_method(doc)
+    image = _to_text(doc.get("image"))
+    notes = _to_text(doc.get("notes"))
+    history = _to_text(doc.get("history"))
+
+    sections = _ingredient_sections(doc, glass=glass, method=method)
+    steps = doc.get("steps")
+    process_steps: list[str] = []
+    if isinstance(steps, list):
+        process_steps = [_to_text(step) for step in steps if _to_text(step)]
+    if not process_steps:
+        process_steps = ["Prepare according to the selected method."]
+
+    lines: list[str] = [f"# {title}", ""]
+    if image:
+        lines.extend(
+            [
+                "<table>",
+                "  <tr>",
+                '    <td valign="top" width="38%">',
+                (
+                    "      "
+                    f'<img src="{html.escape(image, quote=True)}" '
+                    f'alt="{html.escape(title, quote=True)}" />'
+                ),
+                "    </td>",
+                '    <td valign="top" width="62%">',
+            ]
+        )
+        lines.extend(_render_markdown_sections_html(sections))
+        lines.extend(
+            [
+                "    </td>",
+                "  </tr>",
+                "</table>",
+                "",
+            ]
+        )
+    else:
+        lines.extend(["## Ingredients", ""])
+        lines.extend(_render_markdown_sections(sections))
+
+    lines.extend(["## Process", ""])
+    for index, step in enumerate(process_steps, start=1):
+        lines.append(f"{index}. {step}")
+
+    if notes:
+        lines.extend(["", "## Notes", "", notes])
+    if history:
+        lines.extend(["", "## History & Provenance", "", history.strip()])
+    lines.append("")
+    return "\n".join(lines)
 
 
 def _render_recipe(doc: dict[str, Any]) -> str:
@@ -342,8 +553,8 @@ def _render_recipe(doc: dict[str, Any]) -> str:
     glass = _canonical_glass(doc)
     method = _canonical_method(doc)
     notes = _to_text(doc.get("notes"))
-    history = _history_text(doc)
-    url = _source_url(doc)
+    history_lines = _history_markdown_lines(doc)
+    url = _recipe_site_url(doc)
 
     lines: list[str] = [
         r"% --- FRONT SIDE ---",
@@ -373,20 +584,24 @@ def _render_recipe(doc: dict[str, Any]) -> str:
             "",
             r"% --- BACK SIDE ---",
             r"\back",
-            r"\begin{center}",
-            r"    \small\textsc{\color{recipeRed} History \& Provenance}",
-            r"    \rule{\textwidth}{0.4pt}",
-            r"\end{center}",
-            r"\begin{multicols}{2}",
-            f"  \\footnotesize {history}",
-            r"\end{multicols}",
-            "",
-            r"\vfill",
             r"\drawBackMirrorSpiritBar",
+            r"\begin{center}",
+            r"    \footnotesize\textsc{\color{recipeRed} History \& Provenance}",
+            r"    \vspace{-3pt}",
+            r"    \rule{0.92\textwidth}{0.35pt}",
+            r"\end{center}",
+            r"\vspace{-5pt}",
+            r"\begin{multicols*}{2}",
+            r"\scriptsize",
+            r"\setlength{\columnsep}{9pt}",
+            *history_lines,
+            r"\vspace{2pt}",
+            r"\begin{flushright}",
+            rf"\qrcode[height={BACK_PAGE_QR_HEIGHT}]{{{_escape_latex(url)}}}",
+            r"\end{flushright}",
+            r"\end{multicols*}",
         ]
     )
-    if url:
-        lines.append(rf"\noindent\hfill\qrcode[height=0.84in]{{{_escape_latex(url)}}}")
     lines.extend(["", r"\end{recipe}", ""])
     return "\n".join(lines)
 
@@ -404,6 +619,26 @@ def _output_path_for(input_path: Path) -> Path:
     if lowered_suffix in {".yaml", ".yml"}:
         return input_path.with_suffix(".tex")
     return Path(f"{input_path}.tex")
+
+
+def _markdown_output_paths_for(input_path: Path, cocktails: list[dict[str, Any]]) -> list[Path]:
+    seen: dict[str, int] = {}
+    outputs: list[Path] = []
+    for index, doc in enumerate(cocktails, start=1):
+        title = _to_text(doc.get("cocktail") or doc.get("name") or f"cocktail-{index}")
+        slug = _slugify(title)
+        occurrence = seen.get(slug, 0) + 1
+        seen[slug] = occurrence
+        suffix = "" if occurrence == 1 else f"-{occurrence}"
+        outputs.append(input_path.parent / f"{slug}{suffix}.md")
+    return outputs
+
+
+def _write_markdown_documents(input_path: Path, cocktails: list[dict[str, Any]]) -> list[Path]:
+    output_paths = _markdown_output_paths_for(input_path, cocktails)
+    for cocktail, output_path in zip(cocktails, output_paths):
+        output_path.write_text(_render_markdown_recipe(cocktail), encoding="utf-8")
+    return output_paths
 
 
 def _load_cocktails(path: Path) -> list[dict[str, Any]]:
@@ -436,6 +671,12 @@ def main() -> None:
     input_path = input_path.resolve()
 
     cocktails = _load_cocktails(input_path)
+    if args.markdown:
+        output_paths = _write_markdown_documents(input_path, cocktails)
+        for output_path in output_paths:
+            print(output_path)
+        return
+
     output_path = _output_path_for(input_path)
     output_path.write_text(_render_document(cocktails), encoding="utf-8")
     print(output_path)

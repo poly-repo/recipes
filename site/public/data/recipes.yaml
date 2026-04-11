@@ -1,0 +1,8 @@
+version: 1
+categories:
+  - name: Cocktails
+    slug: cocktails
+    kind: cocktail
+    recipes: cocktails.yaml
+    image: cocktails/assets/images/cocktails.jpg
+    description: Spirit-forward classics and modern mixed drinks.

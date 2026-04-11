@@ -1,0 +1,48 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://omega.local/schemas/recipes.schema.yaml"
+title: "Recipe Category Catalog"
+description: |
+  Catalog of recipe categories. Each category points to one YAML source
+  containing one or more recipe documents.
+type: object
+additionalProperties: false
+required:
+  - categories
+properties:
+  version:
+    type: integer
+    minimum: 1
+  categories:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - recipes
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Display name of the category.
+        slug:
+          type: string
+          minLength: 1
+          description: Optional stable URL slug. If omitted, derived from name.
+        kind:
+          type: string
+          minLength: 1
+          description: Optional type hint, e.g. cocktail, pasta, cake.
+        recipes:
+          type: string
+          minLength: 1
+          description: Relative or absolute path/URL to a recipes YAML file.
+        image:
+          type: string
+          minLength: 1
+          description: Optional card image path/URL.
+        description:
+          type: string
+          minLength: 1
+          description: Optional short description for the category card.

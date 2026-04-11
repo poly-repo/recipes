@@ -1,0 +1,29 @@
+{
+  "name": "recipes-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "sync:data": "node ./scripts/sync-data.mjs",
+    "predev": "npm run sync:data",
+    "dev": "vite",
+    "prebuild": "npm run sync:data",
+    "build": "vite build",
+    "publish": "npm run build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.1.0",
+    "react-router-dom": "^6.30.1",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.4.1",
+    "typescript": "^5.8.3",
+    "vite": "^5.4.19"
+  }
+}

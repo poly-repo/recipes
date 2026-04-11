@@ -43,6 +43,10 @@ properties:
   garnish:
     type: string
     minLength: 1
+  image:
+    type: string
+    minLength: 1
+    description: Image URL or path used by downstream renderers (markdown/site).
 
   steps:
     type: array
