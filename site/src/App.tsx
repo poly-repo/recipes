@@ -111,10 +111,13 @@ function HomePage({
       {topNav(true)}
       <header className="hero home-hero">
         <div>
-          <p className="eyebrow">Recipe Library</p>
-          <h1>Browse by Category</h1>
+          <p className="eyebrow">Kitchen Library</p>
+          <h1>Recipes I Refuse to Memorize</h1>
           <p className="hero-subtitle">
-            Each category points to a YAML recipe source. Start with cocktails and grow from there.
+            An honest inventory of my culinary abilities. If it’s not here, I probably can’t make it—or I’ve already failed trying and chosen to forget.
+          </p>
+	  <p>
+	    Includes quantities I will forget, steps I will skip, and notes I will ignore.
           </p>
         </div>
         <RecipeImage
