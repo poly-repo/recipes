@@ -55,7 +55,7 @@ Path implications:
 Canonical editable data lives in `people/mav/recipes/` (not `site/public/data/`):
 
 - `recipes.yaml`: category catalog
-- Category YAML files referenced by catalog, for example `cocktails.yaml`
+- Category YAML files referenced by catalog, for example `cocktails/cocktails.yaml`
 - Images referenced by those YAMLs, for example `cocktails/assets/images/*.jpg`
 
 `site/public/data/*` is generated/synced runtime data for the static frontend.
@@ -183,8 +183,8 @@ Sync implementation:
 LaTeX/YAML generator:
 
 - `bazel build //people/mav/recipes:cocktail_yaml_to_tex`
-- `bazel run //people/mav/recipes:cocktail_yaml_to_tex -- people/mav/recipes/cocktails.yaml`
-- `python3 people/mav/recipes/cocktail_yaml_to_tex.py --markdown people/mav/recipes/cocktails.yaml`
+- `bazel run //people/mav/recipes:cocktail_yaml_to_tex -- people/mav/recipes/cocktails/cocktails.yaml`
+- `python3 people/mav/recipes/cocktail_yaml_to_tex.py --markdown people/mav/recipes/cocktails/cocktails.yaml`
 
 Site:
 
@@ -199,7 +199,7 @@ Site:
 - `cocktail.schema.yaml`: recipe schema
 - `recipes.schema.yaml`: catalog schema
 - `recipes.yaml`: category catalog source-of-truth
-- `cocktails.yaml`: cocktail source-of-truth
+- `cocktails/cocktails.yaml`: cocktail source-of-truth
 - `site/src/App.tsx`: app routes and screens
 - `site/src/lib/catalog.ts`: catalog loader/normalizer
 - `site/src/lib/recipes.ts`: recipe loader/normalizer/strength logic

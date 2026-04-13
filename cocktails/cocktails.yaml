@@ -1,5 +1,5 @@
 cocktail: Margarita
-image: cocktails/assets/images/margarita.jpg
+image: assets/images/margarita.jpg
 
 ingredients:
   - name: Tequila

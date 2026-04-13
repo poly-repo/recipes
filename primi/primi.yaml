@@ -1,7 +1,7 @@
 kind: food
 name: Spaghetti Aglio e Olio
 recipe_type: primi
-image: primi/assets/images/primi.png
+image: assets/images/primi.png
 
 ingredients:
   - name: Spaghetti

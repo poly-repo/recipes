@@ -7,7 +7,7 @@ Static React site for browsing YAML-backed recipes.
 Canonical recipe files live one level up in `people/mav/recipes/`:
 
 - `../recipes.yaml` (category catalog)
-- category recipe YAMLs referenced by that catalog (for example `../cocktails.yaml`)
+- category recipe YAMLs referenced by that catalog (for example `../cocktails/cocktails.yaml`)
 - image assets referenced from those YAML files
 
 Before dev/build, the site syncs those files into `public/data/`.

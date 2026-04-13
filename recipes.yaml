@@ -3,25 +3,24 @@ categories:
   - name: Cocktails
     slug: cocktails
     kind: cocktail
-    recipes: cocktails.yaml
+    recipes: cocktails/cocktails.yaml
     image: cocktails/assets/images/cocktails.jpg
     description: Spirit-forward classics and modern mixed drinks.
   - name: Bakery
     slug: bakery
     kind: food
-    recipes: bakery.yaml
+    recipes: bakery/bakery.yaml
     image: bakery/assets/images/bakery.png
     description: Backed stuff.
   - name: Primi Piatti
     slug: primi
     kind: food
-    recipes: primi.yaml
+    recipes: primi/primi.yaml
     image: primi/assets/images/primi.png
     description: Pasta.
   - name: Secondi Piatti
     slug: secondi
     kind: food
-    recipes: secondi.yaml
+    recipes: secondi/secondi.yaml
     image: secondi/assets/images/secondi.png
     description: From the grill.
-

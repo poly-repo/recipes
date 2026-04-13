@@ -1,7 +1,7 @@
 kind: food
 name: Focaccia Barese
 recipe_type: bakery
-image: bakery/assets/images/bakery.png
+image: assets/images/bakery.png
 
 ingredients:
   - name: Bread Flour
