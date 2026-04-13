@@ -3,13 +3,14 @@ import { parseAllDocuments } from "yaml";
 import { unknownImagePath } from "./recipes";
 
 type JsonRecord = Record<string, unknown>;
+export type RecipeCategoryKind = "cocktail" | "food";
 
 export interface RecipeCategory {
   id: string;
   slug: string;
   name: string;
   description: string | null;
-  kind: string | null;
+  kind: RecipeCategoryKind | null;
   recipesPath: string;
   imageUrl: string;
 }
@@ -55,6 +56,14 @@ function resolveRelativeAsset(basePath: string, relativeOrAbsolute: string): str
   return new URL(relativeOrAbsolute, absoluteBase).toString();
 }
 
+function toCategoryKind(value: unknown): RecipeCategoryKind | null {
+  const text = toText(value)?.toLowerCase();
+  if (text === "cocktail" || text === "food") {
+    return text;
+  }
+  return null;
+}
+
 function normalizeCategory(
   rawEntry: JsonRecord,
   options: {
@@ -78,7 +87,7 @@ function normalizeCategory(
 
   const imagePointer = toText(rawEntry.image);
   const description = toText(rawEntry.description);
-  const kind = toText(rawEntry.kind) ?? toText(rawEntry.type);
+  const kind = toCategoryKind(rawEntry.kind) ?? toCategoryKind(rawEntry.type);
 
   return {
     id: `${slug}::${index}`,

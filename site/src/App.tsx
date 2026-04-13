@@ -160,6 +160,8 @@ function CategorySummaryPage({
   const params = useParams();
   const category = categories.find((entry) => entry.slug === params.categorySlug);
   const recipes = category ? recipesByCategory[category.slug] ?? [] : [];
+  const effectiveCategoryKind = category?.kind ?? recipes[0]?.kind ?? "cocktail";
+  const isCocktailCategory = effectiveCategoryKind === "cocktail";
 
   const [liquorFilter, setLiquorFilter] = useState("all");
   const [strengthFilter, setStrengthFilter] = useState("all");
@@ -178,13 +180,19 @@ function CategorySummaryPage({
   }
 
   const liquorOptions = useMemo(() => {
+    if (!isCocktailCategory) {
+      return [];
+    }
     const allLiquors = recipes
       .map((recipe) => recipe.liquor)
       .filter((liquor): liquor is string => Boolean(liquor));
     return Array.from(new Set(allLiquors)).sort((a, b) => a.localeCompare(b));
-  }, [recipes]);
+  }, [isCocktailCategory, recipes]);
 
   const visibleRecipes = useMemo(() => {
+    if (!isCocktailCategory) {
+      return sortRecipes(recipes, "alpha");
+    }
     const filtered = recipes.filter((recipe) => {
       const liquorMatches = liquorFilter === "all" || recipe.liquor === liquorFilter;
       const strengthMatches =
@@ -192,7 +200,7 @@ function CategorySummaryPage({
       return liquorMatches && strengthMatches;
     });
     return sortRecipes(filtered, sortMode);
-  }, [recipes, liquorFilter, strengthFilter, sortMode]);
+  }, [isCocktailCategory, recipes, liquorFilter, strengthFilter, sortMode]);
 
   return (
     <main className="page-shell">
@@ -207,41 +215,43 @@ function CategorySummaryPage({
         </p>
       </header>
 
-      <section className="filter-bar" aria-label="Recipe filters">
-        <label>
-          Liquor
-          <select value={liquorFilter} onChange={(event) => setLiquorFilter(event.target.value)}>
-            <option value="all">All</option>
-            {liquorOptions.map((liquor) => (
-              <option key={liquor} value={liquor}>
-                {liquor}
-              </option>
-            ))}
-          </select>
-        </label>
+      {isCocktailCategory ? (
+        <section className="filter-bar" aria-label="Recipe filters">
+          <label>
+            Liquor
+            <select value={liquorFilter} onChange={(event) => setLiquorFilter(event.target.value)}>
+              <option value="all">All</option>
+              {liquorOptions.map((liquor) => (
+                <option key={liquor} value={liquor}>
+                  {liquor}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Strength
-          <select
-            value={strengthFilter}
-            onChange={(event) => setStrengthFilter(event.target.value)}
-          >
-            <option value="all">All</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
-        </label>
+          <label>
+            Strength
+            <select
+              value={strengthFilter}
+              onChange={(event) => setStrengthFilter(event.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </label>
 
-        <label>
-          Sort
-          <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
-            <option value="alpha">Alphabetical</option>
-            <option value="strength_desc">Strength: High to Low</option>
-            <option value="strength_asc">Strength: Low to High</option>
-          </select>
-        </label>
-      </section>
+          <label>
+            Sort
+            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+              <option value="alpha">Alphabetical</option>
+              <option value="strength_desc">Strength: High to Low</option>
+              <option value="strength_asc">Strength: Low to High</option>
+            </select>
+          </label>
+        </section>
+      ) : null}
 
       <section className="results-meta">
         Showing <strong>{visibleRecipes.length}</strong> of <strong>{recipes.length}</strong> recipes
@@ -255,8 +265,17 @@ function CategorySummaryPage({
               <div className="card-content">
                 <h2>{recipe.title}</h2>
                 <div className="badge-row">
-                  <span className="badge">{recipe.liquor ?? "Other"}</span>
-                  <span className="badge">Strength {formatStrength(recipe.strength)}</span>
+                  {isCocktailCategory ? (
+                    <>
+                      <span className="badge">{recipe.liquor ?? "Other"}</span>
+                      <span className="badge">Strength {formatStrength(recipe.strength)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="badge">{recipe.recipeType ?? "Food"}</span>
+                      <span className="badge">{category.name}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </Link>
@@ -311,11 +330,20 @@ function RecipeDetailPage({
         <div className="detail-heading">
           <h1>{recipe.title}</h1>
           <div className="badge-row">
-            <span className="badge">{recipe.liquor ?? "Other"}</span>
-            <span className="badge">Strength {formatStrength(recipe.strength)}</span>
-            {recipe.glass ? <span className="badge">{recipe.glass}</span> : null}
-            {recipe.method ? <span className="badge">{recipe.method}</span> : null}
-            {recipe.garnish ? <span className="badge">Garnish: {recipe.garnish}</span> : null}
+            {recipe.kind === "cocktail" ? (
+              <>
+                <span className="badge">{recipe.liquor ?? "Other"}</span>
+                <span className="badge">Strength {formatStrength(recipe.strength)}</span>
+                {recipe.glass ? <span className="badge">{recipe.glass}</span> : null}
+                {recipe.method ? <span className="badge">{recipe.method}</span> : null}
+                {recipe.garnish ? <span className="badge">Garnish: {recipe.garnish}</span> : null}
+              </>
+            ) : (
+              <>
+                <span className="badge">{recipe.recipeType ?? "Food"}</span>
+                <span className="badge">{category.name}</span>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -418,7 +446,7 @@ export default function App() {
         setCategories(loadedCategories);
         const entries = await Promise.all(
           loadedCategories.map(async (category) => {
-            const recipes = await loadRecipes(category.recipesPath);
+            const recipes = await loadRecipes(category.recipesPath, category.kind);
             return [category.slug, recipes] as const;
           }),
         );

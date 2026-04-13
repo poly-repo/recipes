@@ -1,43 +1,35 @@
-cocktail: Margarita
-image: cocktails/assets/images/margarita.jpg
+kind: food
+name: Spaghetti Aglio e Olio
+recipe_type: primi
+image: primi/assets/images/primi.png
 
 ingredients:
-  - name: Tequila
-    amount: 2
-    unit: oz
-    abv: 40
-  - name: Cointreau
+  - name: Spaghetti
+    amount: 320
+    unit: g
+  - name: Garlic
+    amount: 5
+    unit: cloves
+  - name: Extra Virgin Olive Oil
+    amount: 80
+    unit: ml
+  - name: Chili Flakes
     amount: 1
-    unit: oz
-    abv: 40
-  - name: Lime Juice
-    amount: 1
-    unit: oz
-
-process: shake
-glass: coupe
-garnish: lime wedge or wheel
+    unit: tsp
+  - name: Parsley
+    amount: 20
+    unit: g
+  - name: Salt
+    amount: to taste
 
 steps:
-  - "Rub a lime wedge around the rim of a rocks glass and dip it into a small plate of coarse salt."
-  - "Add the tequila, orange liqueur, lime juice to a shaker with ice. Shake until well-chilled."
-  - "Strain the mixture into the prepared glass over fresh ice."
-  - "Garnish with a lime wedge or wheel."
+  - Cook spaghetti in salted water until al dente.
+  - Gently warm oil with sliced garlic and chili until fragrant, not browned.
+  - Toss drained pasta with the flavored oil and a splash of pasta water.
+  - Finish with chopped parsley and adjust seasoning.
 
-notes: Spicy Margarita w/ jalapeno and spicy salt
+notes: Keep the garlic pale to avoid bitterness.
 
 history: |
-  The Margarita, a classic cocktail of tequila, orange liqueur, and lime
-  juice, likely originated in the late 1930s to 1940s in Mexico as a
-  tequila-based variation of the popular "Daisy" cocktail (Margarita is
-  Spanish for "Daisy"). While multiple legends exist—including inventors
-  like Carlos Herrera (1938), Don Carlos (1941), and Margarita Sames
-  (1948)—its true origin is a mix of folklore and the era's popularity
-  of tequila-lime drinks.
-
-  The drink was heavily popularized in the U.S. in the 1950s and 60s, quickly becoming an iconic tequila cocktail. 
-
-  # Key Historical Points
-  - The "Tequila Daisy" Root: The drink likely emerged in the 1930s, with a "Tequila Daisy" mentioned in 1936, translating to "Margarita" in Spanish.
-  - Prohibition Influence: Many stories place the invention in Baja California or Tijuana during the 1930s-40s, where American tourists sought legal alcohol.
-  - Earliest Mentions: The first known recipe for a cocktail named "Margarita" appeared in the December 1953 issue of Esquire magazine, and a 1937 Café Royal Cocktail Book featured a similar drink called the "Picador". 
+  Aglio e olio is a classic Neapolitan first course known for speed, simplicity, and balance.
+  It highlights pantry ingredients and careful heat control.

@@ -32,8 +32,10 @@ properties:
           description: Optional stable URL slug. If omitted, derived from name.
         kind:
           type: string
-          minLength: 1
-          description: Optional type hint, e.g. cocktail, pasta, cake.
+          description: Optional category kind.
+          enum:
+            - cocktail
+            - food
         recipes:
           type: string
           minLength: 1

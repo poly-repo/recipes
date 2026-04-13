@@ -1,6 +1,7 @@
 import { parseAllDocuments } from "yaml";
 
 type JsonRecord = Record<string, unknown>;
+export type RecipeKind = "cocktail" | "food";
 
 export interface Ingredient {
   name: string;
@@ -13,6 +14,8 @@ export interface Ingredient {
 export interface Recipe {
   id: string;
   slug: string;
+  kind: RecipeKind;
+  recipeType: string | null;
   title: string;
   imageUrl: string;
   liquor: string | null;
@@ -64,6 +67,14 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return normalized || "untitled-recipe";
+}
+
+function toRecipeKind(value: unknown): RecipeKind | null {
+  const text = toText(value)?.toLowerCase();
+  if (text === "cocktail" || text === "food") {
+    return text;
+  }
+  return null;
 }
 
 function parseFractionToken(token: string): number | null {
@@ -228,15 +239,33 @@ function parseSteps(rawSteps: unknown): string[] {
     .filter((step): step is string => Boolean(step));
 }
 
+function inferRecipeKind(
+  rawDoc: JsonRecord,
+  categoryKindHint: RecipeKind | null,
+): RecipeKind {
+  const explicitKind = toRecipeKind(rawDoc.kind);
+  if (explicitKind) {
+    return explicitKind;
+  }
+  if (toText(rawDoc.recipe_type)) {
+    return "food";
+  }
+  if (categoryKindHint) {
+    return categoryKindHint;
+  }
+  return "cocktail";
+}
+
 function normalizeRecipe(
   rawDoc: JsonRecord,
   options: {
     index: number;
+    kind: RecipeKind;
     yamlPath: string;
     existingSlugs: Map<string, number>;
   },
 ): Recipe {
-  const { index, yamlPath, existingSlugs } = options;
+  const { index, kind, yamlPath, existingSlugs } = options;
   const title =
     toText(rawDoc.cocktail) ??
     toText(rawDoc.name) ??
@@ -251,18 +280,22 @@ function normalizeRecipe(
   const ingredients = parseIngredients(rawDoc.ingredients);
   const steps = parseSteps(rawDoc.steps);
   const imagePath = toText(rawDoc.image);
-  const method = toText(rawDoc.method) ?? toText(rawDoc.process);
-  const glass = toText(rawDoc.glass);
-  const garnish = toText(rawDoc.garnish);
+  const method = kind === "cocktail" ? toText(rawDoc.method) ?? toText(rawDoc.process) : null;
+  const glass = kind === "cocktail" ? toText(rawDoc.glass) : null;
+  const garnish = kind === "cocktail" ? toText(rawDoc.garnish) : null;
   const notes = toText(rawDoc.notes) ?? toText(rawDoc.description);
   const history = toText(rawDoc.history) ?? toText(rawDoc.background);
-  const baseSpirit = toText(rawDoc.base) ?? toText(rawDoc.base_spirit);
-  const liquor = inferLiquor(baseSpirit, ingredients);
-  const strength = computeStrength(ingredients);
+  const recipeType = kind === "food" ? toText(rawDoc.recipe_type) ?? toText(rawDoc.type) : null;
+  const baseSpirit =
+    kind === "cocktail" ? toText(rawDoc.base) ?? toText(rawDoc.base_spirit) : null;
+  const liquor = kind === "cocktail" ? inferLiquor(baseSpirit, ingredients) : null;
+  const strength = kind === "cocktail" ? computeStrength(ingredients) : null;
 
   return {
     id: `${slug}::${index}`,
     slug,
+    kind,
+    recipeType,
     title,
     imageUrl: resolveImagePath(yamlPath, imagePath),
     liquor,
@@ -278,7 +311,10 @@ function normalizeRecipe(
   };
 }
 
-export async function loadRecipes(yamlPath: string): Promise<Recipe[]> {
+export async function loadRecipes(
+  yamlPath: string,
+  categoryKindHint: string | null = null,
+): Promise<Recipe[]> {
   const response = await fetch(yamlPath);
   if (!response.ok) {
     throw new Error(`Failed to load recipes YAML from ${yamlPath} (${response.status})`);
@@ -293,6 +329,8 @@ export async function loadRecipes(yamlPath: string): Promise<Recipe[]> {
 
   const slugs = new Map<string, number>();
   const recipes: Recipe[] = [];
+  const normalizedCategoryKind = toRecipeKind(categoryKindHint);
+  let fileKind: RecipeKind | null = null;
   for (let index = 0; index < documents.length; index += 1) {
     const docValue = documents[index].toJSON();
     if (docValue === null || docValue === undefined) {
@@ -302,9 +340,22 @@ export async function loadRecipes(yamlPath: string): Promise<Recipe[]> {
     if (!docRecord) {
       continue;
     }
+    const recipeKind = inferRecipeKind(docRecord, normalizedCategoryKind);
+    if (normalizedCategoryKind && recipeKind !== normalizedCategoryKind) {
+      throw new Error(
+        `Kind mismatch in ${yamlPath}: category kind is "${normalizedCategoryKind}" but document #${index + 1} resolves to "${recipeKind}".`,
+      );
+    }
+    if (fileKind && fileKind !== recipeKind) {
+      throw new Error(
+        `Mixed recipe kinds in ${yamlPath}: expected one kind per file but found "${fileKind}" and "${recipeKind}".`,
+      );
+    }
+    fileKind = recipeKind;
     recipes.push(
       normalizeRecipe(docRecord, {
         index,
+        kind: recipeKind,
         yamlPath,
         existingSlugs: slugs,
       }),
