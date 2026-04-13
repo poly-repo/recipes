@@ -41,3 +41,47 @@ history: |
   - The "Tequila Daisy" Root: The drink likely emerged in the 1930s, with a "Tequila Daisy" mentioned in 1936, translating to "Margarita" in Spanish.
   - Prohibition Influence: Many stories place the invention in Baja California or Tijuana during the 1930s-40s, where American tourists sought legal alcohol.
   - Earliest Mentions: The first known recipe for a cocktail named "Margarita" appeared in the December 1953 issue of Esquire magazine, and a 1937 Café Royal Cocktail Book featured a similar drink called the "Picador". 
+---
+cocktail: Espresso Martini
+image: assets/images/espresso_martini.jpg
+
+ingredients:
+  - name: Vodka
+    amount: 1.5
+    unit: oz
+    abv: 40
+  - name: Fresh Espresso
+    amount: 1
+    unit: oz
+    abv: 0
+  - name: Coffee Liqueur
+    amount: 0.5
+    unit: oz
+    abv: 20
+  - name: Saline Solution (optional)
+    amount: 2
+    unit: drops
+    abv: 0
+
+process: shake
+glass: coupe
+garnish: 3 espresso beans
+
+steps:
+  - "Brew a shot of espresso."
+  - "Add the vodka, espresso, and coffee liqueur to a shaker filled with ice."
+  - "Fine-strain into a chilled coupe or martini glass."
+  - "Garnish with three espresso beans on the foam in a petal formation."
+
+notes: (alternative)  Vodka 2oz, Coffee Liqueur .5oz, Simple Syrup .25oz and no saline. Saline is 20s salt/80g water.
+
+history: |
+  The Espresso Martini was created by legendary bartender Dick Bradsell 
+  at Fred’s Club in London in the late 1980s. According to industry lore, 
+  a famous model walked in and asked for a drink that would "wake me up, 
+  and then [mess] me up." 
+
+  # Key Historical Points
+  - Original Name: It was originally called the "Vodka Espresso" and later the "Pharmaceutical Stimulant" before settling on Espresso Martini.
+  - The Froth: The iconic foam (crema) is achieved by the proteins in the coffee reacting with the aeration from a hard shake.
+  - Modern Popularity: While it peaked in the 90s, it has seen a massive global resurgence in the 2020s, becoming a staple on modern cocktail menus.
