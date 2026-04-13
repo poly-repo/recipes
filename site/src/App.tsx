@@ -8,6 +8,12 @@ import { type Recipe, loadRecipes, unknownImagePath } from "./lib/recipes";
 type SortMode = "alpha" | "strength_desc" | "strength_asc";
 
 const DEFAULT_CATALOG_PATH = `${import.meta.env.BASE_URL}data/recipes.yaml`;
+const HOME_CHEF_HAPPY_PATH = `${import.meta.env.BASE_URL}data/assets/images/chef-happy.png`;
+const HOME_CHEF_SERIOUS_PATH = `${import.meta.env.BASE_URL}data/assets/images/chef-serious.png`;
+
+function chooseHomeChefImage(): string {
+  return Math.random() < 0.2 ? HOME_CHEF_HAPPY_PATH : HOME_CHEF_SERIOUS_PATH;
+}
 
 function catalogPathFromUrl(): string {
   const params = new URLSearchParams(window.location.search);
@@ -98,15 +104,24 @@ function HomePage({
   categories: RecipeCategory[];
   recipesByCategory: Record<string, Recipe[]>;
 }) {
+  const [homeChefImage] = useState<string>(() => chooseHomeChefImage());
+
   return (
     <main className="page-shell">
       {topNav(true)}
-      <header className="hero">
-        <p className="eyebrow">Recipe Library</p>
-        <h1>Browse by Category</h1>
-        <p className="hero-subtitle">
-          Each category points to a YAML recipe source. Start with cocktails and grow from there.
-        </p>
+      <header className="hero home-hero">
+        <div>
+          <p className="eyebrow">Recipe Library</p>
+          <h1>Browse by Category</h1>
+          <p className="hero-subtitle">
+            Each category points to a YAML recipe source. Start with cocktails and grow from there.
+          </p>
+        </div>
+        <RecipeImage
+          className="home-chef-image"
+          src={homeChefImage}
+          alt="Chef portrait for the recipes collection"
+        />
       </header>
 
       <section className="card-grid">

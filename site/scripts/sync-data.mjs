@@ -9,6 +9,7 @@ const SOURCE_ROOT = path.resolve(SITE_ROOT, "..");
 const SOURCE_CATALOG = path.resolve(SOURCE_ROOT, "recipes.yaml");
 const DEST_DATA_ROOT = path.resolve(SITE_ROOT, "public", "data");
 const DEST_CATALOG = path.resolve(DEST_DATA_ROOT, "recipes.yaml");
+const STATIC_SITE_ASSET_REFERENCES = ["assets/images/chef-happy.png", "assets/images/chef-serious.png"];
 
 function isRemoteReference(value) {
   return /^(https?:|data:|blob:)/i.test(value) || value.startsWith("/");
@@ -117,6 +118,10 @@ async function syncCatalogAndRecipes() {
   const catalogDocs = parseYamlDocuments(catalogContent, SOURCE_CATALOG);
   const catalogRoot = catalogDocs[0] ?? {};
   const categories = categoriesFromCatalog(catalogRoot);
+
+  for (const assetReference of STATIC_SITE_ASSET_REFERENCES) {
+    await copyByReference(SOURCE_CATALOG, DEST_CATALOG, assetReference, copiedFiles);
+  }
 
   for (const category of categories) {
     if (!category || typeof category !== "object") {

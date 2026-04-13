@@ -73,6 +73,23 @@ a {
   box-shadow: var(--shadow);
 }
 
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 1rem;
+  align-items: center;
+}
+
+.home-chef-image {
+  width: 100%;
+  max-width: 220px;
+  border-radius: 0.9rem;
+  border: 1px solid var(--line);
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  justify-self: end;
+}
+
 .eyebrow {
   margin: 0;
   color: var(--accent);
@@ -299,6 +316,14 @@ a {
 }
 
 @media (max-width: 880px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .home-chef-image {
+    justify-self: start;
+  }
+
   .detail-header {
     grid-template-columns: 1fr;
   }
