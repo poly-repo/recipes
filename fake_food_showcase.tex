@@ -1,0 +1,52 @@
+% arara: lualatex_git
+\documentclass[4x6,food]{recipe-card}
+
+\begin{document}
+
+\begin{recipe}{Weeknight Pomodoro (Demo)}
+\setRecipeType{Primi}
+\begin{ingredients}
+\group{Sauce}
+\ingredient{2 tbsp}{Olive Oil}
+\ingredient{2 cloves}{Garlic, Sliced}
+\ingredient{400 g}{Crushed Tomatoes}
+\ingredient{1 pinch}{Chili Flakes}
+\group{Pasta}
+\ingredient{280 g}{Spaghetti}
+\ingredient{to taste}{Salt and Black Pepper}
+\group{Finish}
+\ingredient{as needed}{Fresh Basil}
+\ingredient{to serve}{Grated Parmigiano}
+\end{ingredients}
+\begin{process}
+\step{Warm olive oil in a pan, then gently cook garlic and chili for 1 minute.}
+\step{Add tomatoes, season, and simmer until slightly thickened.}
+\step{Cook spaghetti in salted water until al dente, then reserve some pasta water.}
+\step{Toss pasta with sauce, adding a splash of pasta water as needed.}
+\step{Finish with basil and parmigiano before serving.}
+\end{process}
+
+\vfill
+\begin{recipeinfo}
+Quick pantry-friendly first course to test food-mode layout and category bars.
+\end{recipeinfo}
+
+\back
+\drawBackMirrorRecipeBar
+\begin{center}
+    \footnotesize\textsc{\color{recipeRed} Notes}
+\end{center}
+\scriptsize
+Designed as a lightweight non-cocktail fixture for testing:
+\begin{itemize}
+\setlength{\itemsep}{1pt}
+\setlength{\parskip}{0pt}
+\setlength{\topsep}{2pt}
+\item Uses class option \texttt{[4x6,food]}.
+\item Uses \texttt{\textbackslash setRecipeType\{Primi\}} instead of \texttt{\textbackslash setBaseSpirit}.
+\item Omits cocktail glass/method icon row on the front side.
+\end{itemize}
+
+\end{recipe}
+
+\end{document}

@@ -5,7 +5,12 @@
 \DeclareOption{4x6}{\PassOptionsToPackage{paperwidth=6in, paperheight=4in}{geometry}}
 \DeclareOption{A6}{\PassOptionsToPackage{paperwidth=148mm, paperheight=105mm}{geometry}}
 \DeclareOption{halfletter}{\PassOptionsToPackage{paperwidth=8.5in, paperheight=5.5in}{geometry}}
-\ExecuteOptions{4x6}
+\newcommand{\recipeCardCategory}{cocktail}
+\newcommand{\recipeCardCategoryCocktail}{cocktail}
+\newcommand{\recipeCardCategoryFood}{food}
+\DeclareOption{cocktail}{\renewcommand{\recipeCardCategory}{cocktail}}
+\DeclareOption{food}{\renewcommand{\recipeCardCategory}{food}}
+\ExecuteOptions{4x6,cocktail}
 \ProcessOptions\relax
 
 \LoadClass[10pt]{article}
@@ -194,79 +199,165 @@
     \drawRecipeBottomCutLine
 }
 
-% Base spirit marker mapping (top-to-bottom segments on right page edge):
+% Edge marker mapping.
+% Cocktail mode (top-to-bottom):
 %   1 Gin     -> #3AA17E
 %   2 Whiskey -> #B06A2B
 %   3 Rum     -> #7A4A2C
 %   4 Vodka   -> #5FA8D3
 %   5 Tequila -> #C9A227
+% Food mode (top-to-bottom):
+%   1 Bakery  -> #D18F3C
+%   2 Primi   -> #4B9D7C
+%   3 Secondi -> #A1533B
 \definecolor{spiritGin}{HTML}{3AA17E}
 \definecolor{spiritWhiskey}{HTML}{B06A2B}
 \definecolor{spiritRum}{HTML}{7A4A2C}
 \definecolor{spiritVodka}{HTML}{5FA8D3}
 \definecolor{spiritTequila}{HTML}{C9A227}
+\definecolor{recipeTypeBakery}{HTML}{D18F3C}
+\definecolor{recipeTypePrimi}{HTML}{4B9D7C}
+\definecolor{recipeTypeSecondi}{HTML}{A1533B}
 \newlength{\spiritStripWidth}
 \newlength{\spiritStripInset}
 \newlength{\spiritSegmentHeight}
 \setlength{\spiritStripWidth}{0.12in}
 \setlength{\spiritStripInset}{0pt}
-\setlength{\spiritSegmentHeight}{0.2\paperheight}
-\newcommand{\setBaseSpirit}[1]{%
-    \gdef\recipeSpiritArg{#1}%
-        \gdef\recipeSpiritSegmentIndex{0}%
-    \gdef\recipeSpiritWhiskey{Whiskey}%
-    \gdef\recipeSpiritRum{Rum}%
-    \gdef\recipeSpiritVodka{Vodka}%
-    \gdef\recipeSpiritTequila{Tequila}%
-    \ifx\recipeSpiritArg\recipeSpiritWhiskey
-        \gdef\recipeSpiritSegmentIndex{1}%
+\setlength{\spiritSegmentHeight}{\dimexpr\paperheight/5\relax}
+\newcommand{\recipeBarMode}{cocktail}
+\newcommand{\recipeSpiritSegmentIndex}{0}
+\newcommand{\recipeTypeSegmentIndex}{0}
+
+\newcommand{\recipeBarUseCocktailDefaults}{%
+    \gdef\recipeBarMode{cocktail}%
+    \setlength{\spiritSegmentHeight}{\dimexpr\paperheight/5\relax}%
+}
+
+\newcommand{\recipeBarUseFoodDefaults}{%
+    \gdef\recipeBarMode{food}%
+    \setlength{\spiritSegmentHeight}{\dimexpr\paperheight/3\relax}%
+}
+
+\newcommand{\recipeBarInitializeFromDocumentClass}{%
+    \ifx\recipeCardCategory\recipeCardCategoryFood
+        \recipeBarUseFoodDefaults
+    \else
+        \recipeBarUseCocktailDefaults
     \fi
-    \ifx\recipeSpiritArg\recipeSpiritRum
-        \gdef\recipeSpiritSegmentIndex{2}%
+}
+
+\newcommand{\recipeDrawEdgeBarAt}[1]{%
+    \draw[draw=black!25,line width=0.2pt] (#1,0) rectangle ++(\spiritStripWidth,-\paperheight);
+    \ifx\recipeBarMode\recipeCardCategoryFood
+        \foreach \i in {1,2}{
+            \draw[draw=black!25,line width=0.2pt] (#1,-\i*\spiritSegmentHeight) -- ++(\spiritStripWidth,0);
+        }
+        \ifnum\recipeTypeSegmentIndex=0 \fill[recipeTypeBakery] (#1,0) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+        \ifnum\recipeTypeSegmentIndex=1 \fill[recipeTypePrimi] (#1,-\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+        \ifnum\recipeTypeSegmentIndex=2 \fill[recipeTypeSecondi] (#1,-2\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+    \else
+        \foreach \i in {1,2,3,4}{
+            \draw[draw=black!25,line width=0.2pt] (#1,-\i*\spiritSegmentHeight) -- ++(\spiritStripWidth,0);
+        }
+        \ifnum\recipeSpiritSegmentIndex=0 \fill[spiritGin] (#1,0) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+        \ifnum\recipeSpiritSegmentIndex=1 \fill[spiritWhiskey] (#1,-\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+        \ifnum\recipeSpiritSegmentIndex=2 \fill[spiritRum] (#1,-2\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+        \ifnum\recipeSpiritSegmentIndex=3 \fill[spiritVodka] (#1,-3\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+        \ifnum\recipeSpiritSegmentIndex=4 \fill[spiritTequila] (#1,-4\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
     \fi
-    \ifx\recipeSpiritArg\recipeSpiritVodka
-        \gdef\recipeSpiritSegmentIndex{3}%
-    \fi
-    \ifx\recipeSpiritArg\recipeSpiritTequila
-        \gdef\recipeSpiritSegmentIndex{4}%
-    \fi
+}
+
+\newcommand{\drawFrontEdgeBar}{%
     \AddToShipoutPictureFG*{%
         \AtPageUpperLeft{%
             \begin{tikzpicture}[overlay]
                 \pgfmathsetlengthmacro{\spiritX}{\paperwidth-\spiritStripInset-\spiritStripWidth}
-                \draw[draw=black!25,line width=0.2pt] (\spiritX,0) rectangle ++(\spiritStripWidth,-\paperheight);
-                \foreach \i in {1,2,3,4}{
-                    \draw[draw=black!25,line width=0.2pt] (\spiritX,-\i*\spiritSegmentHeight) -- ++(\spiritStripWidth,0);
-                }
-                \ifnum\recipeSpiritSegmentIndex=0 \fill[spiritGin] (\spiritX,0) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=1 \fill[spiritWhiskey] (\spiritX,-\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=2 \fill[spiritRum] (\spiritX,-2\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=3 \fill[spiritVodka] (\spiritX,-3\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=4 \fill[spiritTequila] (\spiritX,-4\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+                \recipeDrawEdgeBarAt{\spiritX}
             \end{tikzpicture}%
         }%
     }%
 }
 
-% Mirror the base-spirit edge marker onto the left side of the back page.
-\newcommand{\drawBackMirrorSpiritBar}{
+\newcommand{\setBaseSpirit}[1]{%
+    \recipeBarUseCocktailDefaults
+    \gdef\recipeSpiritArg{#1}%
+    \gdef\recipeSpiritSegmentIndex{0}%
+    \gdef\recipeSpiritGin{Gin}%
+    \gdef\recipeSpiritGinLower{gin}%
+    \gdef\recipeSpiritWhiskey{Whiskey}%
+    \gdef\recipeSpiritWhiskeyLower{whiskey}%
+    \gdef\recipeSpiritRum{Rum}%
+    \gdef\recipeSpiritRumLower{rum}%
+    \gdef\recipeSpiritVodka{Vodka}%
+    \gdef\recipeSpiritVodkaLower{vodka}%
+    \gdef\recipeSpiritTequila{Tequila}%
+    \gdef\recipeSpiritTequilaLower{tequila}%
+    \ifx\recipeSpiritArg\recipeSpiritGinLower
+        \gdef\recipeSpiritSegmentIndex{0}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritWhiskey
+        \gdef\recipeSpiritSegmentIndex{1}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritWhiskeyLower
+        \gdef\recipeSpiritSegmentIndex{1}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritRum
+        \gdef\recipeSpiritSegmentIndex{2}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritRumLower
+        \gdef\recipeSpiritSegmentIndex{2}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritVodka
+        \gdef\recipeSpiritSegmentIndex{3}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritVodkaLower
+        \gdef\recipeSpiritSegmentIndex{3}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritTequila
+        \gdef\recipeSpiritSegmentIndex{4}%
+    \fi
+    \ifx\recipeSpiritArg\recipeSpiritTequilaLower
+        \gdef\recipeSpiritSegmentIndex{4}%
+    \fi
+    \drawFrontEdgeBar
+}
+
+\newcommand{\setRecipeType}[1]{%
+    \recipeBarUseFoodDefaults
+    \gdef\recipeTypeArg{#1}%
+    \gdef\recipeTypeSegmentIndex{0}%
+    \gdef\recipeTypePrimi{Primi}%
+    \gdef\recipeTypePrimiLower{primi}%
+    \gdef\recipeTypeSecondi{Secondi}%
+    \gdef\recipeTypeSecondiLower{secondi}%
+    \ifx\recipeTypeArg\recipeTypePrimi
+        \gdef\recipeTypeSegmentIndex{1}%
+    \fi
+    \ifx\recipeTypeArg\recipeTypePrimiLower
+        \gdef\recipeTypeSegmentIndex{1}%
+    \fi
+    \ifx\recipeTypeArg\recipeTypeSecondi
+        \gdef\recipeTypeSegmentIndex{2}%
+    \fi
+    \ifx\recipeTypeArg\recipeTypeSecondiLower
+        \gdef\recipeTypeSegmentIndex{2}%
+    \fi
+    \drawFrontEdgeBar
+}
+
+% Mirror the edge marker onto the left side of the back page.
+\newcommand{\drawBackMirrorRecipeBar}{
     \AddToShipoutPictureFG*{%
         \AtPageUpperLeft{%
             \begin{tikzpicture}[overlay]
                 \pgfmathsetlengthmacro{\spiritXL}{\spiritStripInset}
-                \draw[draw=black!25,line width=0.2pt] (\spiritXL,0) rectangle ++(\spiritStripWidth,-\paperheight);
-                \foreach \i in {1,2,3,4}{
-                    \draw[draw=black!25,line width=0.2pt] (\spiritXL,-\i*\spiritSegmentHeight) -- ++(\spiritStripWidth,0);
-                }
-                \ifnum\recipeSpiritSegmentIndex=0 \fill[spiritGin] (\spiritXL,0) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=1 \fill[spiritWhiskey] (\spiritXL,-\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=2 \fill[spiritRum] (\spiritXL,-2\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=3 \fill[spiritVodka] (\spiritXL,-3\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
-                \ifnum\recipeSpiritSegmentIndex=4 \fill[spiritTequila] (\spiritXL,-4\spiritSegmentHeight) rectangle ++(\spiritStripWidth,-\spiritSegmentHeight);\fi
+                \recipeDrawEdgeBarAt{\spiritXL}
             \end{tikzpicture}%
         }%
     }%
 }
+\newcommand{\drawBackMirrorSpiritBar}{\drawBackMirrorRecipeBar}
+\AtBeginDocument{\recipeBarInitializeFromDocumentClass}
 
 \newcommand{\cocktailHistory}[1]{
     \clearpage
