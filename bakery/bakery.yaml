@@ -1,36 +1,36 @@
 kind: food
-name: Focaccia Barese
+name: Ciabatta Rolls
 recipe_type: bakery
 image: assets/images/bakery.png
 
 ingredients:
-  - name: Bread Flour
+  - name: Strong Bread Flour
     amount: 500
     unit: g
   - name: Water
-    amount: 360
+    amount: 390
     unit: g
   - name: Extra Virgin Olive Oil
-    amount: 40
+    amount: 20
     unit: g
   - name: Fine Sea Salt
-    amount: 10
+    amount: 11
     unit: g
   - name: Instant Yeast
-    amount: 4
+    amount: 3
     unit: g
-  - name: Cherry Tomatoes
-    amount: 150
-    unit: g
+  - name: Semolina Flour
+    amount: as needed
+    unit: for dusting
 
 steps:
-  - Mix flour, water, oil, salt, and yeast until a sticky dough forms.
-  - Rest 20 minutes, then fold the dough a few times until smoother.
-  - Transfer to an oiled tray, dimple the surface, and top with tomatoes.
-  - Proof until airy, then bake at 230C until deeply golden.
+  - Mix flour, water, yeast, oil, and salt until a very soft dough forms.
+  - Let rest 20 minutes, then perform 3 stretch-and-fold rounds every 20 minutes.
+  - Ferment until doubled, divide into 8 pieces, and shape gently on semolina.
+  - Final proof 30 to 45 minutes, then bake at 230C with steam until deep golden.
 
-notes: Crisp exterior, airy crumb, and lots of olive oil aroma.
+notes: Hydration is high by design; handle with wet hands and minimal pressure.
 
 history: |
-  Focaccia is one of Italy's oldest flatbreads, with roots in Liguria and many regional forms.
-  The Bari style often includes tomatoes and generous olive oil.
+  Ciabatta was developed in Italy in the 1980s as a rustic, highly hydrated loaf.
+  Its open crumb and crackly crust made it popular for panini and table bread.

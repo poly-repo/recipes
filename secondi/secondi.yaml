@@ -1,37 +1,50 @@
 kind: food
-name: Grilled Rosemary Chicken
+name: Chicken Cacciatore
 recipe_type: secondi
 image: assets/images/secondi.png
 
 ingredients:
-  - name: Chicken Thighs
-    amount: 1.2
+  - name: Bone-In Chicken Pieces
+    amount: 1.4
     unit: kg
   - name: Extra Virgin Olive Oil
     amount: 45
     unit: ml
-  - name: Lemon Zest
+  - name: Onion
     amount: 1
-    unit: lemon
-  - name: Fresh Rosemary
-    amount: 2
-    unit: sprigs
+    unit: large
+  - name: Carrot
+    amount: 1
+    unit: medium
+  - name: Celery Stalk
+    amount: 1
+    unit: large
   - name: Garlic
     amount: 3
     unit: cloves
+  - name: Dry White Wine
+    amount: 150
+    unit: ml
+  - name: Crushed Tomatoes
+    amount: 400
+    unit: g
+  - name: Fresh Thyme
+    amount: 3
+    unit: sprigs
   - name: Salt
     amount: to taste
   - name: Black Pepper
     amount: to taste
 
 steps:
-  - Marinate chicken with oil, lemon zest, rosemary, garlic, salt, and pepper.
-  - Rest at least 30 minutes, then preheat grill to medium-high.
-  - Grill skin-side down first, then turn until cooked through and charred in spots.
-  - Rest briefly before serving.
+  - Season chicken and brown in olive oil until well colored, then set aside.
+  - Sweat onion, carrot, celery, and garlic in the same pan.
+  - Deglaze with white wine and reduce by half.
+  - Add tomatoes and thyme, return chicken to the pan, cover, and simmer 35 to 45 minutes.
+  - Uncover for a final reduction and adjust seasoning before serving.
 
-notes: Works well with roasted potatoes or a bitter green salad.
+notes: Excellent with polenta or crusty bread to soak up the sauce.
 
 history: |
-  Herb-marinated grilled chicken appears across many Italian home kitchens.
-  The secondi course emphasizes protein-focused dishes served after primi.
+  Cacciatore means "hunter-style" and appears in many regional Italian variations.
+  The core idea is rustic braised poultry with aromatics, wine, and tomatoes.
