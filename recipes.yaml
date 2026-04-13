@@ -9,19 +9,19 @@ categories:
   - name: Bakery
     slug: bakery
     kind: food
-    recipes: backery.yaml
-    image: backery/assets/images/backery.jpg
+    recipes: bakery.yaml
+    image: bakery/assets/images/bakery.png
     description: Backed stuff.
   - name: Primi Piatti
     slug: primi
     kind: food
     recipes: primi.yaml
-    image: primi/assets/images/primi.jpg
+    image: primi/assets/images/primi.png
     description: Pasta.
   - name: Secondi Piatti
     slug: secondi
     kind: food
     recipes: secondi.yaml
-    image: secondi/assets/images/secondi.jpg
+    image: secondi/assets/images/secondi.png
     description: From the grill.
 
